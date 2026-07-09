@@ -1,0 +1,333 @@
+[
+  {
+    "id": "ember_cut",
+    "name": "余火斩",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "starter",
+    "cost": 1,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage"],
+    "effects": [{ "op": "damage", "target": "selected_enemy", "value": 6 }],
+    "design_purpose": "基础攻击。"
+  },
+  {
+    "id": "ash_guard",
+    "name": "灰幕护身",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "starter",
+    "cost": 1,
+    "target": "player",
+    "tags": ["block"],
+    "effects": [{ "op": "gain_block", "target": "player", "value": 5 }],
+    "design_purpose": "基础防御。"
+  },
+  {
+    "id": "spark_survey",
+    "name": "火星探路",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "starter",
+    "cost": 0,
+    "target": "none",
+    "tags": ["draw"],
+    "effects": [{ "op": "draw", "target": "none", "count": 1 }],
+    "design_purpose": "初始过牌。"
+  },
+  {
+    "id": "coal_thrust",
+    "name": "煤刃突刺",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "common",
+    "cost": 1,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage"],
+    "effects": [{ "op": "damage", "target": "selected_enemy", "value": 8 }],
+    "design_purpose": "高于基础的普通输出。"
+  },
+  {
+    "id": "low_flame",
+    "name": "低焰压制",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "common",
+    "cost": 0,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage"],
+    "effects": [{ "op": "damage", "target": "selected_enemy", "value": 4 }],
+    "design_purpose": "0 费补刀。"
+  },
+  {
+    "id": "cinder_shell",
+    "name": "炭壳架势",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "common",
+    "cost": 2,
+    "target": "player",
+    "tags": ["block"],
+    "effects": [{ "op": "gain_block", "target": "player", "value": 12 }],
+    "design_purpose": "大防御回合。"
+  },
+  {
+    "id": "quick_breath",
+    "name": "急促换息",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "common",
+    "cost": 1,
+    "target": "none",
+    "tags": ["draw"],
+    "effects": [{ "op": "draw", "target": "none", "count": 2 }],
+    "design_purpose": "手牌修正。"
+  },
+  {
+    "id": "warm_edge",
+    "name": "温刃",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "common",
+    "cost": 1,
+    "target": "selected_enemy",
+    "tags": ["attack", "block"],
+    "effects": [
+      { "op": "damage", "target": "selected_enemy", "value": 5 },
+      { "op": "gain_block", "target": "player", "value": 3 }
+    ],
+    "design_purpose": "攻防混合。"
+  },
+  {
+    "id": "smoke_step",
+    "name": "烟步",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "common",
+    "cost": 1,
+    "target": "player",
+    "tags": ["block", "draw"],
+    "effects": [
+      { "op": "gain_block", "target": "player", "value": 4 },
+      { "op": "draw", "target": "none", "count": 1 }
+    ],
+    "design_purpose": "防御中过牌。"
+  },
+  {
+    "id": "banked_heat",
+    "name": "蓄热一击",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "common",
+    "cost": 2,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage"],
+    "effects": [{ "op": "damage", "target": "selected_enemy", "value": 14 }],
+    "design_purpose": "早期爆发。"
+  },
+  {
+    "id": "char_mark",
+    "name": "炭印",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "common",
+    "cost": 1,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage", "multi_hit"],
+    "effects": [
+      { "op": "damage", "target": "selected_enemy", "value": 3 },
+      { "op": "damage", "target": "selected_enemy", "value": 3 }
+    ],
+    "design_purpose": "多段伤害测试。"
+  },
+  {
+    "id": "ember_line",
+    "name": "余烬线",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "uncommon",
+    "cost": 2,
+    "target": "selected_enemy",
+    "tags": ["attack", "draw"],
+    "effects": [
+      { "op": "damage", "target": "selected_enemy", "value": 9 },
+      { "op": "draw", "target": "none", "count": 1 }
+    ],
+    "design_purpose": "进攻中过牌。"
+  },
+  {
+    "id": "steady_kindling",
+    "name": "稳燃",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "common",
+    "cost": 1,
+    "target": "player",
+    "tags": ["block"],
+    "effects": [{ "op": "gain_block", "target": "player", "value": 7 }],
+    "design_purpose": "高效普通防御。"
+  },
+  {
+    "id": "flicker_cut",
+    "name": "闪焰切",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "uncommon",
+    "cost": 0,
+    "target": "selected_enemy",
+    "tags": ["attack", "draw"],
+    "effects": [
+      { "op": "damage", "target": "selected_enemy", "value": 2 },
+      { "op": "draw", "target": "none", "count": 1 }
+    ],
+    "design_purpose": "0 费循环入口。"
+  },
+  {
+    "id": "covered_advance",
+    "name": "掩护推进",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "uncommon",
+    "cost": 2,
+    "target": "player",
+    "tags": ["block", "draw"],
+    "effects": [
+      { "op": "gain_block", "target": "player", "value": 9 },
+      { "op": "draw", "target": "none", "count": 1 }
+    ],
+    "design_purpose": "高费防御修正。"
+  },
+  {
+    "id": "red_coal",
+    "name": "赤煤",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "common",
+    "cost": 1,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage"],
+    "effects": [{ "op": "damage", "target": "selected_enemy", "value": 10 }],
+    "design_purpose": "单纯高效攻击，供平衡标尺。"
+  },
+  {
+    "id": "breathing_room",
+    "name": "回旋余地",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "common",
+    "cost": 0,
+    "target": "player",
+    "tags": ["block"],
+    "effects": [{ "op": "gain_block", "target": "player", "value": 3 }],
+    "design_purpose": "0 费生存补点。"
+  },
+  {
+    "id": "flare_pair",
+    "name": "双焰",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "uncommon",
+    "cost": 1,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage", "multi_hit"],
+    "effects": [
+      { "op": "damage", "target": "selected_enemy", "value": 4 },
+      { "op": "damage", "target": "selected_enemy", "value": 4 }
+    ],
+    "design_purpose": "多段与力量预留测试。"
+  },
+  {
+    "id": "ashen_read",
+    "name": "读灰",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "uncommon",
+    "cost": 1,
+    "target": "none",
+    "tags": ["draw"],
+    "effects": [{ "op": "draw", "target": "none", "count": 3 }],
+    "design_purpose": "纯抽牌，测试手牌上限。"
+  },
+  {
+    "id": "hard_glow",
+    "name": "硬光防线",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "rare",
+    "cost": 2,
+    "target": "player",
+    "tags": ["block"],
+    "effects": [{ "op": "gain_block", "target": "player", "value": 16 }],
+    "design_purpose": "大格挡稀有标尺。"
+  },
+  {
+    "id": "last_coal",
+    "name": "末煤",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "rare",
+    "cost": 2,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage"],
+    "effects": [{ "op": "damage", "target": "selected_enemy", "value": 18 }],
+    "design_purpose": "终结型攻击。"
+  },
+  {
+    "id": "trail_cover",
+    "name": "踏痕掩护",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "uncommon",
+    "cost": 1,
+    "target": "player",
+    "tags": ["block", "draw"],
+    "effects": [
+      { "op": "gain_block", "target": "player", "value": 5 },
+      { "op": "draw", "target": "none", "count": 1 }
+    ],
+    "design_purpose": "朴素优质技能。"
+  },
+  {
+    "id": "split_spark",
+    "name": "裂火星",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "uncommon",
+    "cost": 1,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage", "multi_hit"],
+    "effects": [
+      { "op": "damage", "target": "selected_enemy", "value": 2 },
+      { "op": "damage", "target": "selected_enemy", "value": 2 },
+      { "op": "damage", "target": "selected_enemy", "value": 2 }
+    ],
+    "design_purpose": "三段结算测试。"
+  },
+  {
+    "id": "embershield",
+    "name": "余火盾",
+    "character": "ember_ranger",
+    "type": "skill",
+    "rarity": "uncommon",
+    "cost": 1,
+    "target": "player",
+    "tags": ["block"],
+    "effects": [
+      { "op": "gain_block", "target": "player", "value": 4 },
+      { "op": "gain_block", "target": "player", "value": 4 }
+    ],
+    "design_purpose": "多段格挡结算测试。"
+  },
+  {
+    "id": "flare_finish",
+    "name": "明焰收束",
+    "character": "ember_ranger",
+    "type": "attack",
+    "rarity": "rare",
+    "cost": 3,
+    "target": "selected_enemy",
+    "tags": ["attack", "damage"],
+    "effects": [{ "op": "damage", "target": "selected_enemy", "value": 24 }],
+    "design_purpose": "高费攻击，测试能量限制。"
+  }
+]

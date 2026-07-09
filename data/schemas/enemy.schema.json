@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M1 Enemy",
+  "type": "object",
+  "required": ["id", "name", "hp_min", "hp_max", "moves"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "hp_min": { "type": "integer", "minimum": 1 },
+    "hp_max": { "type": "integer", "minimum": 1 },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "moves": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "intent", "weight", "effects"],
+        "properties": {
+          "id": { "type": "string" },
+          "intent": { "enum": ["attack", "defend", "attack_defend", "unknown"] },
+          "weight": { "type": "integer", "minimum": 0 },
+          "cooldown": { "type": "integer", "minimum": 0 },
+          "max_consecutive": { "type": "integer", "minimum": 1 },
+          "phase": { "type": "string" },
+          "effects": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "card.schema.json#/$defs/effect" }
+          }
+        }
+      }
+    },
+    "phases": { "type": "array" }
+  }
+}

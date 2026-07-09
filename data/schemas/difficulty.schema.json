@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M1 Difficulty",
+  "type": "object",
+  "required": ["id", "name", "base_adjustments", "modifiers"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "base_adjustments": {
+      "type": "object",
+      "required": [
+        "enemy_hp_multiplier",
+        "enemy_damage_multiplier",
+        "elite_hp_multiplier",
+        "boss_hp_multiplier",
+        "starting_max_hp_delta",
+        "starting_gold_delta"
+      ],
+      "properties": {
+        "enemy_hp_multiplier": { "type": "number", "exclusiveMinimum": 0 },
+        "enemy_damage_multiplier": { "type": "number", "exclusiveMinimum": 0 },
+        "elite_hp_multiplier": { "type": "number", "exclusiveMinimum": 0 },
+        "boss_hp_multiplier": { "type": "number", "exclusiveMinimum": 0 },
+        "starting_max_hp_delta": { "type": "integer" },
+        "starting_gold_delta": { "type": "integer" },
+        "potion_drop_multiplier": { "type": "number", "exclusiveMinimum": 0 },
+        "shop_price_multiplier": { "type": "number", "exclusiveMinimum": 0 },
+        "rest_heal_multiplier": { "type": "number", "exclusiveMinimum": 0 },
+        "event_cost_multiplier": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "modifiers": { "type": "array", "items": { "type": "string" } }
+  }
+}

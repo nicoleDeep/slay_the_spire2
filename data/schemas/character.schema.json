@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M1 Character",
+  "type": "object",
+  "required": ["id", "display_name", "max_hp", "starting_gold", "starting_deck"],
+  "properties": {
+    "id": { "type": "string" },
+    "display_name": { "type": "string" },
+    "max_hp": { "type": "integer", "minimum": 1 },
+    "starting_gold": { "type": "integer", "minimum": 0 },
+    "starting_relic": { "type": ["string", "null"] },
+    "base_energy": { "type": "integer", "minimum": 0 },
+    "base_hand_size": { "type": "integer", "minimum": 1 },
+    "card_pool_tags": { "type": "array", "items": { "type": "string" } },
+    "combat_module": { "type": ["string", "null"] },
+    "starting_deck": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["card_id", "count"],
+        "properties": {
+          "card_id": { "type": "string" },
+          "count": { "type": "integer", "minimum": 1 }
+        }
+      }
+    }
+  }
+}

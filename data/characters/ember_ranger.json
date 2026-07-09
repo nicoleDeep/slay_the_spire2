@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ember_ranger",
+    "display_name": "余烬巡林人",
+    "max_hp": 74,
+    "starting_gold": 90,
+    "starting_relic": "charcoal_compass",
+    "base_energy": 3,
+    "base_hand_size": 5,
+    "card_pool_tags": ["ember_ranger"],
+    "combat_module": null,
+    "starting_deck": [
+      { "card_id": "ember_cut", "count": 5 },
+      { "card_id": "ash_guard", "count": 4 },
+      { "card_id": "spark_survey", "count": 1 }
+    ]
+  }
+]

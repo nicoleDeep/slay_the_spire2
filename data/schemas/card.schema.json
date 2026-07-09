@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M1 Card",
+  "type": "object",
+  "required": ["id", "name", "character", "type", "rarity", "cost", "target", "effects"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "character": { "type": "string" },
+    "type": { "enum": ["attack", "skill", "power", "status", "curse", "special"] },
+    "rarity": { "enum": ["starter", "common", "uncommon", "rare", "special"] },
+    "cost": { "type": "integer", "minimum": 0 },
+    "target": { "enum": ["self", "player", "selected_enemy", "all_enemies", "random_enemy", "none"] },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "effects": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/effect" },
+      "minItems": 1
+    },
+    "design_purpose": { "type": "string" }
+  },
+  "$defs": {
+    "effect": {
+      "type": "object",
+      "required": ["op"],
+      "properties": {
+        "op": { "enum": ["damage", "gain_block", "draw"] },
+        "target": { "enum": ["self", "player", "selected_enemy", "all_enemies", "random_enemy", "none"] },
+        "value": { "type": "integer", "minimum": 0 },
+        "count": { "type": "integer", "minimum": 1 },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

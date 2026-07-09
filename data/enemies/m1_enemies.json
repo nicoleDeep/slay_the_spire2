@@ -1,0 +1,133 @@
+[
+  {
+    "id": "mote_biter",
+    "name": "尘咬虫",
+    "hp_min": 18,
+    "hp_max": 22,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "nip", "intent": "attack", "weight": 60, "effects": [{ "op": "damage", "target": "player", "value": 5 }] },
+      { "id": "hide", "intent": "defend", "weight": 40, "effects": [{ "op": "gain_block", "target": "self", "value": 5 }] }
+    ]
+  },
+  {
+    "id": "glass_mite",
+    "name": "玻壳螨",
+    "hp_min": 14,
+    "hp_max": 18,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "stab", "intent": "attack", "weight": 70, "effects": [{ "op": "damage", "target": "player", "value": 7 }] },
+      { "id": "brace", "intent": "defend", "weight": 30, "effects": [{ "op": "gain_block", "target": "self", "value": 3 }] }
+    ]
+  },
+  {
+    "id": "char_spitter",
+    "name": "吐炭者",
+    "hp_min": 26,
+    "hp_max": 31,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "spit", "intent": "attack", "weight": 55, "effects": [{ "op": "damage", "target": "player", "value": 6 }] },
+      { "id": "coil", "intent": "defend", "weight": 45, "effects": [{ "op": "gain_block", "target": "self", "value": 8 }] }
+    ]
+  },
+  {
+    "id": "lantern_thief",
+    "name": "提灯窃客",
+    "hp_min": 24,
+    "hp_max": 28,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "poke", "intent": "attack", "weight": 50, "effects": [{ "op": "damage", "target": "player", "value": 4 }] },
+      { "id": "rush", "intent": "attack", "weight": 50, "effects": [{ "op": "damage", "target": "player", "value": 3 }, { "op": "damage", "target": "player", "value": 3 }] }
+    ]
+  },
+  {
+    "id": "hollow_guard",
+    "name": "空壳守卫",
+    "hp_min": 32,
+    "hp_max": 38,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "slam", "intent": "attack", "weight": 50, "effects": [{ "op": "damage", "target": "player", "value": 8 }] },
+      { "id": "guard", "intent": "defend", "weight": 50, "effects": [{ "op": "gain_block", "target": "self", "value": 10 }] }
+    ]
+  },
+  {
+    "id": "ash_flock_a",
+    "name": "灰群甲",
+    "hp_min": 16,
+    "hp_max": 20,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "peck", "intent": "attack", "weight": 65, "effects": [{ "op": "damage", "target": "player", "value": 4 }] },
+      { "id": "flutter", "intent": "defend", "weight": 35, "effects": [{ "op": "gain_block", "target": "self", "value": 4 }] }
+    ]
+  },
+  {
+    "id": "ash_flock_b",
+    "name": "灰群乙",
+    "hp_min": 16,
+    "hp_max": 20,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "peck", "intent": "attack", "weight": 65, "effects": [{ "op": "damage", "target": "player", "value": 4 }] },
+      { "id": "flutter", "intent": "defend", "weight": 35, "effects": [{ "op": "gain_block", "target": "self", "value": 4 }] }
+    ]
+  },
+  {
+    "id": "warm_root",
+    "name": "温根怪",
+    "hp_min": 30,
+    "hp_max": 35,
+    "tags": ["act1", "normal"],
+    "moves": [
+      { "id": "lash", "intent": "attack", "weight": 55, "effects": [{ "op": "damage", "target": "player", "value": 6 }] },
+      { "id": "settle", "intent": "defend", "weight": 45, "effects": [{ "op": "gain_block", "target": "self", "value": 7 }] }
+    ]
+  },
+  {
+    "id": "kiln_knight",
+    "name": "炉甲骑",
+    "hp_min": 70,
+    "hp_max": 78,
+    "tags": ["act1", "elite"],
+    "moves": [
+      { "id": "heavy_swing", "intent": "attack", "weight": 45, "effects": [{ "op": "damage", "target": "player", "value": 14 }] },
+      { "id": "shield_heat", "intent": "defend", "weight": 35, "effects": [{ "op": "gain_block", "target": "self", "value": 14 }] },
+      { "id": "double_tap", "intent": "attack", "weight": 20, "effects": [{ "op": "damage", "target": "player", "value": 6 }, { "op": "damage", "target": "player", "value": 6 }] }
+    ]
+  },
+  {
+    "id": "mirror_cinder",
+    "name": "镜炭偶",
+    "hp_min": 62,
+    "hp_max": 70,
+    "tags": ["act1", "elite"],
+    "moves": [
+      { "id": "shard_cut", "intent": "attack", "weight": 50, "effects": [{ "op": "damage", "target": "player", "value": 8 }] },
+      { "id": "shard_rain", "intent": "attack", "weight": 25, "effects": [{ "op": "damage", "target": "player", "value": 3 }, { "op": "damage", "target": "player", "value": 3 }, { "op": "damage", "target": "player", "value": 3 }] },
+      { "id": "polish", "intent": "defend", "weight": 25, "effects": [{ "op": "gain_block", "target": "self", "value": 12 }] }
+    ]
+  },
+  {
+    "id": "brass_heartwood",
+    "name": "铜芯树",
+    "hp_min": 150,
+    "hp_max": 165,
+    "tags": ["act1", "boss"],
+    "moves": [
+      { "id": "root_press", "intent": "attack", "weight": 40, "phase": "phase_1", "effects": [{ "op": "damage", "target": "player", "value": 10 }] },
+      { "id": "bark_wall", "intent": "defend", "weight": 30, "phase": "phase_1", "effects": [{ "op": "gain_block", "target": "self", "value": 18 }] },
+      { "id": "core_pulse", "intent": "attack", "weight": 30, "phase": "phase_1", "effects": [{ "op": "damage", "target": "player", "value": 6 }, { "op": "damage", "target": "player", "value": 6 }] },
+      { "id": "root_press_plus", "intent": "attack", "weight": 40, "phase": "phase_2", "effects": [{ "op": "damage", "target": "player", "value": 12 }] },
+      { "id": "bark_wall", "intent": "defend", "weight": 25, "phase": "phase_2", "effects": [{ "op": "gain_block", "target": "self", "value": 18 }] },
+      { "id": "core_pulse_plus", "intent": "attack", "weight": 35, "phase": "phase_2", "effects": [{ "op": "damage", "target": "player", "value": 5 }, { "op": "damage", "target": "player", "value": 5 }, { "op": "damage", "target": "player", "value": 5 }] }
+    ],
+    "phases": [
+      { "id": "phase_1", "hp_above_ratio": 0.5 },
+      { "id": "phase_2", "hp_at_or_below_ratio": 0.5 }
+    ]
+  }
+]

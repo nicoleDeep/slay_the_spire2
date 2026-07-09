@@ -1,0 +1,36 @@
+[
+  {
+    "id": "D0",
+    "name": "入门",
+    "base_adjustments": {
+      "enemy_hp_multiplier": 0.9,
+      "enemy_damage_multiplier": 0.85,
+      "elite_hp_multiplier": 0.9,
+      "boss_hp_multiplier": 0.9,
+      "starting_max_hp_delta": 5,
+      "starting_gold_delta": 10,
+      "potion_drop_multiplier": 1.0,
+      "shop_price_multiplier": 1.0,
+      "rest_heal_multiplier": 1.0,
+      "event_cost_multiplier": 1.0
+    },
+    "modifiers": []
+  },
+  {
+    "id": "D1",
+    "name": "标准",
+    "base_adjustments": {
+      "enemy_hp_multiplier": 1.0,
+      "enemy_damage_multiplier": 1.0,
+      "elite_hp_multiplier": 1.0,
+      "boss_hp_multiplier": 1.0,
+      "starting_max_hp_delta": 0,
+      "starting_gold_delta": 0,
+      "potion_drop_multiplier": 1.0,
+      "shop_price_multiplier": 1.0,
+      "rest_heal_multiplier": 1.0,
+      "event_cost_multiplier": 1.0
+    },
+    "modifiers": []
+  }
+]
