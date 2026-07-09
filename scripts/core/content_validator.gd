@@ -1,14 +1,31 @@
 extends RefCounted
 class_name ContentValidator
 
-const ALLOWED_OPS := ["damage", "gain_block", "draw"]
+const ALLOWED_OPS := [
+	"damage", "damage_all", "gain_block", "draw", "discard", "exhaust",
+	"gain_energy", "apply_status", "remove_status", "add_card_to_draw",
+	"add_card_to_discard", "add_card_to_hand", "heal", "lose_hp",
+	"gain_gold", "lose_gold", "upgrade_card", "remove_card", "gain_relic",
+	"gain_potion", "modify_cost", "create_choice"
+]
 const ALLOWED_TARGETS := ["self", "player", "selected_enemy", "all_enemies", "random_enemy", "none"]
 const ALLOWED_CARD_TYPES := ["attack", "skill", "power", "status", "curse", "special"]
-const ALLOWED_RARITIES := ["starter", "common", "uncommon", "rare", "special"]
-const ALLOWED_INTENTS := ["attack", "defend", "attack_defend", "unknown"]
+const ALLOWED_RARITIES := ["starter", "common", "uncommon", "rare", "special", "boss"]
+const ALLOWED_INTENTS := ["attack", "defend", "attack_defend", "debuff", "buff", "unknown"]
 const ALLOWED_DIFFICULTIES := ["D0", "D1", "D2", "D3"]
 const ALLOWED_NODE_TYPES := ["normal", "elite", "boss", "shop", "event", "rest", "treasure"]
 const ALLOWED_MODIFIERS := ["more_safe_routes", "remove_cost_up", "more_elite_routes", "act1_harder_move_weights"]
+const ALLOWED_HOOKS := [
+	"run_start", "combat_created", "combat_start", "turn_start", "turn_end",
+	"before_card_played", "after_card_played", "card_drawn", "card_exhausted",
+	"enemy_killed", "player_damaged", "hp_lost", "gold_gained",
+	"before_potion_used", "after_potion_used", "combat_victory",
+	"reward_generated", "shop_entered", "rest_site_entered",
+	"node_completed", "act_completed"
+]
+const DEPRECATED_HOOKS := ["card_played", "potion_used"]
+const ALLOWED_CONDITIONS := ["always", "has_status", "hp_at_least", "gold_at_least", "card_in_hand", "deck_has_tag", "enemy_count_at_least"]
+const ALLOWED_STATUSES := ["strength", "dexterity", "vulnerable", "weak", "frail", "poison", "regeneration", "ritual", "artifact"]
 
 static func validate_all(database: Dictionary) -> Dictionary:
 	var errors: Array[String] = []
@@ -18,6 +35,12 @@ static func validate_all(database: Dictionary) -> Dictionary:
 	var enemies: Dictionary = database.get("enemies", {})
 	var difficulties: Dictionary = database.get("difficulties", {})
 	var acts: Dictionary = database.get("acts", {})
+	var relics: Dictionary = database.get("relics", {})
+	var potions: Dictionary = database.get("potions", {})
+	var events: Dictionary = database.get("events", {})
+	var reward_pools: Dictionary = database.get("reward_pools", {})
+	var shop_pools: Dictionary = database.get("shop_pools", {})
+	var rest_sites: Dictionary = database.get("rest_sites", {})
 
 	for id in characters.keys():
 		_validate_character(id, characters[id], cards, errors)
@@ -31,7 +54,19 @@ static func validate_all(database: Dictionary) -> Dictionary:
 	for id in difficulties.keys():
 		_validate_difficulty(id, difficulties[id], errors)
 	for id in acts.keys():
-		_validate_act(id, acts[id], enemies, errors)
+		_validate_act(id, acts[id], enemies, reward_pools, shop_pools, rest_sites, errors)
+	for id in relics.keys():
+		_validate_relic(id, relics[id], errors)
+	for id in potions.keys():
+		_validate_potion(id, potions[id], errors)
+	for id in events.keys():
+		_validate_event(id, events[id], errors)
+	for id in reward_pools.keys():
+		_validate_reward_pool(id, reward_pools[id], cards, relics, potions, events, errors)
+	for id in shop_pools.keys():
+		_validate_shop_pool(id, shop_pools[id], cards, relics, potions, errors)
+	for id in rest_sites.keys():
+		_validate_rest_site(id, rest_sites[id], errors)
 	if cards.size() < 5:
 		errors.append("M1 requires at least 5 cards; found %d" % cards.size())
 	if characters.size() < 1:
@@ -40,6 +75,27 @@ static func validate_all(database: Dictionary) -> Dictionary:
 		errors.append("M1 requires at least 1 enemy")
 	if not acts.has("act1_emberwood_m2"):
 		errors.append("Missing required M2 Act: act1_emberwood_m2")
+	for required_relic in [
+		"charcoal_compass", "relic_pathfinder_lens", "relic_bankers_ember",
+		"relic_quiet_bellows", "relic_split_flint", "relic_cooling_rivet",
+		"relic_ashwood_token", "relic_hollow_canteen", "relic_trailward_knot",
+		"relic_brass_seed"
+	]:
+		if not relics.has(required_relic):
+			errors.append("Missing required M2 relic: %s" % required_relic)
+	for required_potion in ["potion_coal_skin", "potion_flash_draw", "potion_kindled_focus", "potion_cinder_burst", "potion_clear_breath"]:
+		if not potions.has(required_potion):
+			errors.append("Missing required M2 potion: %s" % required_potion)
+	for required_event in ["event_echo_toll", "event_soot_archive", "event_broken_waystone", "event_warm_rain", "event_lantern_exchange"]:
+		if not events.has(required_event):
+			errors.append("Missing required M2 event: %s" % required_event)
+	for required_pool in [
+		"pool_reward_ember_ranger_m2", "pool_relic_common_m2", "pool_relic_elite_m2",
+		"pool_relic_boss_m2", "pool_potion_m2", "pool_event_act1_m2",
+		"pool_shop_act1_m2", "pool_treasure_act1_m2"
+	]:
+		if not reward_pools.has(required_pool) and not shop_pools.has(required_pool):
+			errors.append("Missing required M2 pool: %s" % required_pool)
 	if _contains_deprecated_id(database.get("raw", {})):
 		errors.append("ERR_DEPRECATED_CONTENT_ID: role_forge_wayfarer/fw_* is not allowed")
 	return {
@@ -120,7 +176,7 @@ static func _validate_difficulty(id: String, difficulty: Dictionary, errors: Arr
 			errors.append("Difficulty %s references unknown modifier %s" % [id, modifier_id])
 
 
-static func _validate_act(id: String, act: Dictionary, enemies: Dictionary, errors: Array[String]) -> void:
+static func _validate_act(id: String, act: Dictionary, enemies: Dictionary, reward_pools: Dictionary, shop_pools: Dictionary, rest_sites: Dictionary, errors: Array[String]) -> void:
 	if int(act.get("floor_count", 0)) != 12 or int(act.get("boss_floor", 0)) != 12:
 		errors.append("Act %s must use the frozen 12-floor M2 profile" % id)
 	if int(act.get("start_node_count", 0)) < 1:
@@ -139,10 +195,102 @@ static func _validate_act(id: String, act: Dictionary, enemies: Dictionary, erro
 		for enemy_id in pool:
 			if not enemies.has(String(enemy_id)):
 				errors.append("Act %s pool %s references missing enemy %s" % [id, pool_name, enemy_id])
+	for pool_name in ["events", "treasures"]:
+		var pool_id := String(pools.get(pool_name, ""))
+		if not reward_pools.has(pool_id):
+			errors.append("Act %s references missing pool %s" % [id, pool_id])
+	var shop_pool_id := String(pools.get("shops", ""))
+	if not shop_pools.has(shop_pool_id):
+		errors.append("Act %s references missing shop pool %s" % [id, shop_pool_id])
+	var rest_id := String(act.get("rest_definition_id", ""))
+	if not rest_sites.has(rest_id):
+		errors.append("Act %s references missing rest site %s" % [id, rest_id])
 
 
-static func _validate_effects(effects: Array, scope: String, errors: Array[String]) -> void:
-	if effects.is_empty():
+static func _validate_relic(id: String, relic: Dictionary, errors: Array[String]) -> void:
+	_require_string(relic, "name", "Relic %s" % id, errors)
+	if not ALLOWED_RARITIES.has(relic.get("rarity", "")):
+		errors.append("Relic %s has invalid rarity %s" % [id, relic.get("rarity", "")])
+	if not relic.has("triggers") or not relic.triggers is Array:
+		errors.append("Relic %s missing triggers array" % id)
+		return
+	for trigger in relic.triggers:
+		var hook := String(trigger.get("hook", ""))
+		if DEPRECATED_HOOKS.has(hook):
+			errors.append("ERR_DEPRECATED_HOOK_ID: Relic %s uses %s" % [id, hook])
+		elif not ALLOWED_HOOKS.has(hook):
+			errors.append("Relic %s uses unknown hook %s" % [id, hook])
+		_validate_condition(trigger.get("condition", {"op": "always"}), "Relic %s hook %s" % [id, hook], errors)
+		_validate_effects(trigger.get("effects", []), "Relic %s hook %s" % [id, hook], errors, true)
+		var scope := String(trigger.get("limit", {}).get("scope", "per_run"))
+		if not ["per_turn", "per_combat", "per_node", "per_run"].has(scope):
+			errors.append("Relic %s has invalid limit scope %s" % [id, scope])
+
+
+static func _validate_potion(id: String, potion: Dictionary, errors: Array[String]) -> void:
+	_require_string(potion, "name", "Potion %s" % id, errors)
+	if String(potion.get("use_context", "")) != "combat":
+		errors.append("Potion %s has invalid M2 use_context %s" % [id, potion.get("use_context", "")])
+	if not ALLOWED_TARGETS.has(potion.get("target", "")):
+		errors.append("Potion %s has invalid target %s" % [id, potion.get("target", "")])
+	_validate_effects(potion.get("effects", []), "Potion %s" % id, errors)
+
+
+static func _validate_event(id: String, event: Dictionary, errors: Array[String]) -> void:
+	_require_string(event, "title", "Event %s" % id, errors)
+	if not event.has("options") or not event.options is Array or event.options.is_empty():
+		errors.append("Event %s must have options" % id)
+		return
+	var has_safe_exit := false
+	for option in event.options:
+		if bool(option.get("safe_exit", false)) and String(option.get("condition", {}).get("op", "always")) == "always":
+			has_safe_exit = true
+		_validate_condition(option.get("condition", {"op": "always"}), "Event %s option %s" % [id, option.get("id", "")], errors)
+		_validate_effects(option.get("costs", []), "Event %s option %s costs" % [id, option.get("id", "")], errors, true)
+		_validate_effects(option.get("effects", []), "Event %s option %s effects" % [id, option.get("id", "")], errors, true)
+	if not has_safe_exit:
+		errors.append("Event %s must have an always-legal safe_exit option" % id)
+
+
+static func _validate_reward_pool(id: String, pool: Dictionary, cards: Dictionary, relics: Dictionary, potions: Dictionary, events: Dictionary, errors: Array[String]) -> void:
+	for card_id in pool.get("cards", []):
+		if not cards.has(String(card_id)):
+			errors.append("Reward pool %s references missing card %s" % [id, card_id])
+	for relic_id in pool.get("relics", []):
+		if not relics.has(String(relic_id)):
+			errors.append("Reward pool %s references missing relic %s" % [id, relic_id])
+	for potion_id in pool.get("potions", []):
+		if not potions.has(String(potion_id)):
+			errors.append("Reward pool %s references missing potion %s" % [id, potion_id])
+	for event_id in pool.get("events", []):
+		if not events.has(String(event_id)):
+			errors.append("Reward pool %s references missing event %s" % [id, event_id])
+	var relic_pool_id := String(pool.get("relic_pool_id", ""))
+	if not relic_pool_id.is_empty() and not pool.has("relics"):
+		pass
+	if id == "pool_reward_ember_ranger_m2" and pool.get("cards", []).is_empty():
+		errors.append("pool_reward_ember_ranger_m2 must not be empty")
+
+
+static func _validate_shop_pool(id: String, pool: Dictionary, cards: Dictionary, relics: Dictionary, potions: Dictionary, errors: Array[String]) -> void:
+	for card_id in pool.get("cards", []):
+		if not cards.has(String(card_id)):
+			errors.append("Shop pool %s references missing card %s" % [id, card_id])
+	for relic_id in pool.get("relics", []):
+		if not relics.has(String(relic_id)):
+			errors.append("Shop pool %s references missing relic %s" % [id, relic_id])
+	for potion_id in pool.get("potions", []):
+		if not potions.has(String(potion_id)):
+			errors.append("Shop pool %s references missing potion %s" % [id, potion_id])
+
+
+static func _validate_rest_site(id: String, rest: Dictionary, errors: Array[String]) -> void:
+	if not rest.has("heal") or not rest.has("upgrade"):
+		errors.append("Rest site %s must define heal and upgrade actions" % id)
+
+
+static func _validate_effects(effects: Array, scope: String, errors: Array[String], allow_empty: bool = false) -> void:
+	if effects.is_empty() and not allow_empty:
 		errors.append("%s has no effects" % scope)
 	for effect in effects:
 		if not effect is Dictionary:
@@ -150,15 +298,29 @@ static func _validate_effects(effects: Array, scope: String, errors: Array[Strin
 			continue
 		var op := String(effect.get("op", ""))
 		if not ALLOWED_OPS.has(op):
-			errors.append("%s uses unsupported M1 op %s" % [scope, op])
+			errors.append("%s uses unsupported op %s" % [scope, op])
 		if effect.has("target") and not ALLOWED_TARGETS.has(effect.target):
 			errors.append("%s effect %s has invalid target %s" % [scope, op, effect.target])
-		if op in ["damage", "gain_block"]:
+		if op in ["damage", "damage_all", "gain_block", "heal", "lose_hp", "gain_gold", "lose_gold"]:
 			_require_int_min(effect, "value", 0, "%s effect %s" % [scope, op], errors)
 		if op == "draw":
 			_require_int_min(effect, "count", 1, "%s effect draw" % scope, errors)
+		if op == "apply_status":
+			if not ALLOWED_STATUSES.has(String(effect.get("status", ""))):
+				errors.append("%s effect apply_status has invalid status %s" % [scope, effect.get("status", "")])
+			_require_int_min(effect, "value", 1, "%s effect apply_status" % scope, errors)
+		if op == "remove_status" and not ALLOWED_STATUSES.has(String(effect.get("status", ""))):
+			errors.append("%s effect remove_status has invalid status %s" % [scope, effect.get("status", "")])
+		if op in ["upgrade_card", "remove_card"] and String(effect.get("selection", "")) == "":
+			errors.append("%s effect %s missing selection" % [scope, op])
 		if effect.has("count"):
 			_require_int_min(effect, "count", 1, "%s effect %s" % [scope, op], errors)
+
+
+static func _validate_condition(condition: Dictionary, scope: String, errors: Array[String]) -> void:
+	var op := String(condition.get("op", "always"))
+	if not ALLOWED_CONDITIONS.has(op):
+		errors.append("%s has unsupported condition %s" % [scope, op])
 
 
 static func _require_string(data: Dictionary, key: String, scope: String, errors: Array[String]) -> void:

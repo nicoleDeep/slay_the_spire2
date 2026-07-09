@@ -90,6 +90,12 @@ func validate_run_state(run_state: Dictionary) -> Dictionary:
 		for card_instance in run_state.get("deck", []):
 			if not database.get("cards", {}).has(String(card_instance.get("card_id", ""))):
 				return _error("ERR_SAVE_CONTENT_MISMATCH", "Save references a missing card ID")
+		for relic_id in run_state.get("relic_ids", []):
+			if not database.get("relics", {}).has(String(relic_id)):
+				return _error("ERR_SAVE_CONTENT_MISMATCH", "Save references a missing relic ID")
+		for potion_id in run_state.get("potions", []):
+			if potion_id != null and not database.get("potions", {}).has(String(potion_id)):
+				return _error("ERR_SAVE_CONTENT_MISMATCH", "Save references a missing potion ID")
 		if not database.get("acts", {}).has(String(run_state.get("act_id", ""))):
 			return _error("ERR_SAVE_CONTENT_MISMATCH", "Save references a missing Act ID")
 	var rng_streams: Dictionary = run_state.get("rng_streams", {})

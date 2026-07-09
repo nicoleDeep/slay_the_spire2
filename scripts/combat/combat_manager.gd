@@ -228,11 +228,34 @@ func _choose_all_enemy_intents() -> void:
 	for i in range(state.enemies.size()):
 		if int(state.enemies[i].hp) <= 0:
 			continue
+		_tick_move_cooldowns(i)
 		var legal_moves := []
 		for move in state.enemies[i].moves:
-			if int(move.get("weight", 0)) > 0 and _move_phase_is_active(state.enemies[i], move):
-				legal_moves.append(move)
-		state.enemies[i].intent_move = rng.pick_weighted(legal_moves)
+			var move_weight := difficulty_manager.apply_enemy_move_weight(
+				String(state.enemies[i].id),
+				String(move.get("id", "")),
+				int(move.get("weight", 0)),
+				state.difficulty
+			)
+			if move_weight > 0 and _move_phase_is_active(state.enemies[i], move) and _move_timing_is_legal(state.enemies[i], move):
+				var weighted_move: Dictionary = move.duplicate(true)
+				weighted_move.weight = move_weight
+				legal_moves.append(weighted_move)
+		if legal_moves.is_empty():
+			for move in state.enemies[i].moves:
+				var fallback_weight := difficulty_manager.apply_enemy_move_weight(
+					String(state.enemies[i].id),
+					String(move.get("id", "")),
+					int(move.get("weight", 0)),
+					state.difficulty
+				)
+				if fallback_weight > 0 and _move_phase_is_active(state.enemies[i], move):
+					var fallback_move: Dictionary = move.duplicate(true)
+					fallback_move.weight = fallback_weight
+					legal_moves.append(fallback_move)
+		var picked := rng.pick_weighted(legal_moves)
+		state.enemies[i].intent_move = picked
+		_mark_move_selected(i, picked)
 
 
 func _create_enemies(enemy_ids: Array[String], profile: Dictionary) -> Array:
@@ -247,6 +270,9 @@ func _create_enemies(enemy_ids: Array[String], profile: Dictionary) -> Array:
 		instance.hp = max_hp
 		instance.block = 0
 		instance.intent_move = {}
+		instance.move_cooldowns = {}
+		instance.last_move_id = ""
+		instance.consecutive_count = 0
 		enemies.append(instance)
 		index += 1
 	return enemies
@@ -289,6 +315,38 @@ func _move_phase_is_active(enemy: Dictionary, move: Dictionary) -> bool:
 			return false
 		return true
 	return true
+
+
+func _move_timing_is_legal(enemy: Dictionary, move: Dictionary) -> bool:
+	var move_id := String(move.get("id", ""))
+	if int(enemy.get("move_cooldowns", {}).get(move_id, 0)) > 0:
+		return false
+	var max_consecutive := int(move.get("max_consecutive", 0))
+	if max_consecutive > 0 and String(enemy.get("last_move_id", "")) == move_id and int(enemy.get("consecutive_count", 0)) >= max_consecutive:
+		return false
+	return true
+
+
+func _tick_move_cooldowns(enemy_index: int) -> void:
+	var cooldowns: Dictionary = state.enemies[enemy_index].get("move_cooldowns", {})
+	for move_id in cooldowns.keys():
+		cooldowns[move_id] = max(0, int(cooldowns[move_id]) - 1)
+	state.enemies[enemy_index].move_cooldowns = cooldowns
+
+
+func _mark_move_selected(enemy_index: int, move: Dictionary) -> void:
+	if move.is_empty():
+		return
+	var move_id := String(move.get("id", ""))
+	if String(state.enemies[enemy_index].get("last_move_id", "")) == move_id:
+		state.enemies[enemy_index].consecutive_count = int(state.enemies[enemy_index].get("consecutive_count", 0)) + 1
+	else:
+		state.enemies[enemy_index].last_move_id = move_id
+		state.enemies[enemy_index].consecutive_count = 1
+	if int(move.get("cooldown", 0)) > 0:
+		var cooldowns: Dictionary = state.enemies[enemy_index].get("move_cooldowns", {})
+		cooldowns[move_id] = int(move.cooldown)
+		state.enemies[enemy_index].move_cooldowns = cooldowns
 
 
 func _log(message: String) -> void:

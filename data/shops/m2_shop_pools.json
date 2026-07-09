@@ -1,0 +1,19 @@
+[
+  {
+    "id": "pool_shop_act1_m2",
+    "card_slots": 5,
+    "relic_slots": 2,
+    "potion_slots": 2,
+    "cards": ["coal_thrust", "smoke_step", "red_coal", "quick_breath", "steady_kindling", "warm_edge", "breathing_room"],
+    "relics": ["relic_pathfinder_lens", "relic_bankers_ember", "relic_quiet_bellows", "relic_ashwood_token", "relic_hollow_canteen"],
+    "potions": ["potion_coal_skin", "potion_flash_draw", "potion_kindled_focus", "potion_cinder_burst", "potion_clear_breath"],
+    "prices": {
+      "card": {"base": 50},
+      "relic": {"base": 140},
+      "potion": {"base": 55}
+    },
+    "remove_base_price": 75,
+    "remove_increment": 25,
+    "design_purpose": "M2 商店：5 张牌、2 遗物、2 药水和一次删牌服务。"
+  }
+]

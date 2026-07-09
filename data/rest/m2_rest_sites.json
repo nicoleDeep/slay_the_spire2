@@ -1,0 +1,10 @@
+[
+  {
+    "id": "rest_emberwood_m2",
+    "name": "余烬营火",
+    "localization_key": "rest.emberwood_m2",
+    "heal": {"enabled": true, "base_max_hp_ratio": 0.30},
+    "upgrade": {"enabled": true, "selection": "manual", "max_count": 1},
+    "design_purpose": "M2 休息点：回复或升级二选一。"
+  }
+]

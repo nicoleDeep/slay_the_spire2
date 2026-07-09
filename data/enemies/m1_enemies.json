@@ -17,7 +17,7 @@
     "hp_max": 18,
     "tags": ["act1", "normal"],
     "moves": [
-      { "id": "stab", "intent": "attack", "weight": 70, "effects": [{ "op": "damage", "target": "player", "value": 7 }] },
+      { "id": "stab", "intent": "attack", "weight": 70, "max_consecutive": 2, "effects": [{ "op": "damage", "target": "player", "value": 7 }] },
       { "id": "brace", "intent": "defend", "weight": 30, "effects": [{ "op": "gain_block", "target": "self", "value": 3 }] }
     ]
   },
@@ -94,7 +94,7 @@
     "hp_max": 78,
     "tags": ["act1", "elite"],
     "moves": [
-      { "id": "heavy_swing", "intent": "attack", "weight": 45, "effects": [{ "op": "damage", "target": "player", "value": 14 }] },
+      { "id": "heavy_swing", "intent": "attack", "weight": 45, "cooldown": 1, "effects": [{ "op": "damage", "target": "player", "value": 14 }] },
       { "id": "shield_heat", "intent": "defend", "weight": 35, "effects": [{ "op": "gain_block", "target": "self", "value": 14 }] },
       { "id": "double_tap", "intent": "attack", "weight": 20, "effects": [{ "op": "damage", "target": "player", "value": 6 }, { "op": "damage", "target": "player", "value": 6 }] }
     ]

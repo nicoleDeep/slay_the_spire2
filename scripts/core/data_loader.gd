@@ -47,17 +47,35 @@ static func load_content_database() -> Dictionary:
 	var enemies := load_json_array("res://data/enemies/m1_enemies.json")
 	var difficulties := load_json_array("res://data/difficulties/difficulties.json")
 	var acts := [load_json_object("res://data/acts/act1_emberwood_m2.json")]
+	var relics := load_json_array("res://data/relics/m2_relics.json")
+	var potions := load_json_array("res://data/potions/m2_potions.json")
+	var events := load_json_array("res://data/events/m2_events.json")
+	var reward_pools := load_json_array("res://data/rewards/m2_reward_pools.json")
+	var shop_pools := load_json_array("res://data/shops/m2_shop_pools.json")
+	var rest_sites := load_json_array("res://data/rest/m2_rest_sites.json")
 	return {
 		"characters": index_by_id(characters),
 		"cards": index_by_id(cards),
 		"enemies": index_by_id(enemies),
 		"difficulties": index_by_id(difficulties),
 		"acts": index_by_id(acts),
+		"relics": index_by_id(relics),
+		"potions": index_by_id(potions),
+		"events": index_by_id(events),
+		"reward_pools": index_by_id(reward_pools),
+		"shop_pools": index_by_id(shop_pools),
+		"rest_sites": index_by_id(rest_sites),
 		"raw": {
 			"characters": characters,
 			"cards": cards,
 			"enemies": enemies,
 			"difficulties": difficulties,
-			"acts": acts
+			"acts": acts,
+			"relics": relics,
+			"potions": potions,
+			"events": events,
+			"reward_pools": reward_pools,
+			"shop_pools": shop_pools,
+			"rest_sites": rest_sites
 		}
 	}

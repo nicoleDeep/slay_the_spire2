@@ -1,0 +1,52 @@
+[
+  {
+    "id": "potion_coal_skin",
+    "name": "煤肤药剂",
+    "localization_key": "potion.coal_skin",
+    "rarity": "common",
+    "use_context": "combat",
+    "target": "player",
+    "design_purpose": "一次性格挡药水。",
+    "effects": [{"op": "gain_block", "target": "player", "value": 8}]
+  },
+  {
+    "id": "potion_flash_draw",
+    "name": "闪燃灵感",
+    "localization_key": "potion.flash_draw",
+    "rarity": "common",
+    "use_context": "combat",
+    "target": "none",
+    "design_purpose": "一次性抽牌药水。",
+    "effects": [{"op": "draw", "target": "none", "count": 2}]
+  },
+  {
+    "id": "potion_kindled_focus",
+    "name": "聚火药剂",
+    "localization_key": "potion.kindled_focus",
+    "rarity": "uncommon",
+    "use_context": "combat",
+    "target": "player",
+    "design_purpose": "M2 状态 op 校验样例。",
+    "effects": [{"op": "apply_status", "target": "player", "status": "strength", "value": 2}]
+  },
+  {
+    "id": "potion_cinder_burst",
+    "name": "烬爆瓶",
+    "localization_key": "potion.cinder_burst",
+    "rarity": "common",
+    "use_context": "combat",
+    "target": "selected_enemy",
+    "design_purpose": "一次性伤害药水。",
+    "effects": [{"op": "damage", "target": "selected_enemy", "value": 12}]
+  },
+  {
+    "id": "potion_clear_breath",
+    "name": "澄息药剂",
+    "localization_key": "potion.clear_breath",
+    "rarity": "uncommon",
+    "use_context": "combat",
+    "target": "player",
+    "design_purpose": "M2 回复药水样例。",
+    "effects": [{"op": "heal", "target": "player", "value": 10}]
+  }
+]

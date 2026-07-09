@@ -1,0 +1,84 @@
+[
+  {
+    "id": "event_echo_toll",
+    "title": "回声关税",
+    "localization_key": "event.echo_toll",
+    "pool_tags": ["act1", "emberwood"],
+    "weight": 10,
+    "once_per_run": true,
+    "design_purpose": "金币换升级，覆盖费用不足与手动升级。",
+    "options": [
+      {
+        "id": "pay_gold_upgrade",
+        "condition": {"op": "gold_at_least", "value": 40},
+        "costs": [{"op": "lose_gold", "value": 40}],
+        "effects": [{"op": "upgrade_card", "selection": "manual", "scope": "deck"}],
+        "safe_exit": false
+      },
+      {"id": "leave", "condition": {"op": "always"}, "costs": [], "effects": [], "safe_exit": true}
+    ]
+  },
+  {
+    "id": "event_soot_archive",
+    "title": "烟尘档案",
+    "localization_key": "event.soot_archive",
+    "pool_tags": ["act1", "emberwood"],
+    "weight": 10,
+    "once_per_run": true,
+    "design_purpose": "生命代价换金币。",
+    "options": [
+      {
+        "id": "trade_hp_for_gold",
+        "condition": {"op": "hp_at_least", "value": 13},
+        "costs": [{"op": "lose_hp", "value": 12}],
+        "effects": [{"op": "gain_gold", "value": 55}],
+        "safe_exit": false
+      },
+      {"id": "leave", "condition": {"op": "always"}, "costs": [], "effects": [], "safe_exit": true}
+    ]
+  },
+  {
+    "id": "event_broken_waystone",
+    "title": "断裂路石",
+    "localization_key": "event.broken_waystone",
+    "pool_tags": ["act1", "emberwood"],
+    "weight": 10,
+    "once_per_run": true,
+    "design_purpose": "删牌事件样例。",
+    "options": [
+      {
+        "id": "remove_card",
+        "condition": {"op": "gold_at_least", "value": 25},
+        "costs": [{"op": "lose_gold", "value": 25}],
+        "effects": [{"op": "remove_card", "selection": "manual", "scope": "deck"}],
+        "safe_exit": false
+      },
+      {"id": "leave", "condition": {"op": "always"}, "costs": [], "effects": [], "safe_exit": true}
+    ]
+  },
+  {
+    "id": "event_warm_rain",
+    "title": "温雨",
+    "localization_key": "event.warm_rain",
+    "pool_tags": ["act1", "emberwood"],
+    "weight": 10,
+    "once_per_run": true,
+    "design_purpose": "安全回复事件。",
+    "options": [
+      {"id": "rest_under_rain", "condition": {"op": "always"}, "costs": [], "effects": [{"op": "heal", "value": 8, "target": "player"}], "safe_exit": true}
+    ]
+  },
+  {
+    "id": "event_lantern_exchange",
+    "title": "提灯交换",
+    "localization_key": "event.lantern_exchange",
+    "pool_tags": ["act1", "emberwood"],
+    "weight": 10,
+    "once_per_run": true,
+    "design_purpose": "低额金币奖励与安全离开。",
+    "options": [
+      {"id": "take_small_gold", "condition": {"op": "always"}, "costs": [], "effects": [{"op": "gain_gold", "value": 18}], "safe_exit": false},
+      {"id": "leave", "condition": {"op": "always"}, "costs": [], "effects": [], "safe_exit": true}
+    ]
+  }
+]

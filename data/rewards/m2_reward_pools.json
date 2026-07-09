@@ -1,0 +1,88 @@
+[
+  {
+    "id": "pool_reward_ember_ranger_m2",
+    "cards": ["coal_thrust", "low_flame", "cinder_shell", "quick_breath", "warm_edge", "smoke_step", "banked_heat", "char_mark", "steady_kindling", "red_coal", "breathing_room", "ember_line", "flicker_cut", "covered_advance", "flare_pair", "ashen_read", "hard_glow", "last_coal", "flare_finish"],
+    "design_purpose": "M2 canonical Ember Ranger card reward pool."
+  },
+  {
+    "id": "pool_reward_normal_m2",
+    "source": "normal_combat",
+    "gold_min": 12,
+    "gold_max": 22,
+    "card_pool_id": "pool_reward_ember_ranger_m2",
+    "card_offer_count": 3,
+    "cards": ["coal_thrust", "low_flame", "cinder_shell", "quick_breath", "warm_edge", "smoke_step", "banked_heat", "char_mark", "steady_kindling", "red_coal", "breathing_room"],
+    "potions": ["potion_coal_skin", "potion_flash_draw", "potion_cinder_burst", "potion_clear_breath"],
+    "potion_chance": 0.35,
+    "design_purpose": "普通战斗金币、三选一和可选药水。"
+  },
+  {
+    "id": "pool_reward_elite_m2",
+    "source": "elite_combat",
+    "gold_min": 24,
+    "gold_max": 38,
+    "card_pool_id": "pool_reward_ember_ranger_m2",
+    "card_offer_count": 3,
+    "cards": ["ember_line", "flicker_cut", "covered_advance", "flare_pair", "ashen_read", "hard_glow", "last_coal"],
+    "relic_pool_id": "pool_relic_elite_m2",
+    "potions": ["potion_coal_skin", "potion_flash_draw", "potion_kindled_focus", "potion_cinder_burst", "potion_clear_breath"],
+    "potion_chance": 0.45,
+    "empty_relic_pool_gold": 35,
+    "design_purpose": "精英战斗奖励，包含不重复遗物。"
+  },
+  {
+    "id": "pool_reward_boss_m2",
+    "source": "boss_combat",
+    "gold_min": 65,
+    "gold_max": 85,
+    "card_pool_id": "pool_reward_ember_ranger_m2",
+    "card_offer_count": 3,
+    "cards": ["hard_glow", "last_coal", "flare_finish", "ashen_read", "covered_advance"],
+    "relic_pool_id": "pool_relic_boss_m2",
+    "potions": ["potion_kindled_focus", "potion_clear_breath"],
+    "potion_chance": 0.0,
+    "empty_relic_pool_gold": 75,
+    "design_purpose": "Boss 奖励和 Act 完成前的最终选择。"
+  },
+  {
+    "id": "pool_treasure_act1_m2",
+    "source": "treasure",
+    "gold_min": 0,
+    "gold_max": 0,
+    "card_pool_id": "pool_reward_ember_ranger_m2",
+    "card_offer_count": 0,
+    "cards": [],
+    "relic_pool_id": "pool_relic_common_m2",
+    "potions": [],
+    "potion_chance": 0.0,
+    "empty_relic_pool_gold": 45,
+    "events": ["event_echo_toll", "event_soot_archive", "event_broken_waystone", "event_warm_rain", "event_lantern_exchange"],
+    "relics": ["relic_pathfinder_lens", "relic_bankers_ember", "relic_quiet_bellows", "relic_split_flint", "relic_cooling_rivet", "relic_ashwood_token", "relic_hollow_canteen"],
+    "design_purpose": "宝箱奖励池，也承载事件池索引用于 M2 加载。"
+  },
+  {
+    "id": "pool_relic_common_m2",
+    "relics": ["relic_pathfinder_lens", "relic_bankers_ember", "relic_quiet_bellows", "relic_split_flint", "relic_cooling_rivet", "relic_ashwood_token", "relic_hollow_canteen"],
+    "design_purpose": "普通遗物池。"
+  },
+  {
+    "id": "pool_relic_elite_m2",
+    "relics": ["relic_pathfinder_lens", "relic_bankers_ember", "relic_quiet_bellows", "relic_split_flint", "relic_cooling_rivet", "relic_ashwood_token", "relic_hollow_canteen"],
+    "design_purpose": "精英遗物池。"
+  },
+  {
+    "id": "pool_relic_boss_m2",
+    "relics": ["relic_trailward_knot", "relic_brass_seed"],
+    "design_purpose": "Boss 遗物池。"
+  },
+  {
+    "id": "pool_event_act1_m2",
+    "events": ["event_echo_toll", "event_soot_archive", "event_broken_waystone", "event_warm_rain", "event_lantern_exchange"],
+    "design_purpose": "Act 1 事件池。"
+  },
+  {
+    "id": "pool_potion_m2",
+    "potions": ["potion_coal_skin", "potion_flash_draw", "potion_kindled_focus", "potion_cinder_burst", "potion_clear_breath"],
+    "design_purpose": "M2 药水池。"
+  }
+]

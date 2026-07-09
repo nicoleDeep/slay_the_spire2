@@ -58,3 +58,15 @@ func apply_enemy_hp(enemy_data: Dictionary, profile: Dictionary) -> int:
 func apply_enemy_damage(base_damage: int, profile: Dictionary) -> int:
 	var multiplier := float(get_adjustment(profile, "enemy_damage_multiplier", 1.0))
 	return max(0, int(round(float(base_damage) * multiplier)))
+
+
+func apply_enemy_move_weight(enemy_id: String, move_id: String, base_weight: int, profile: Dictionary) -> int:
+	var result := base_weight
+	for modifier in profile.get("modifiers", []):
+		if String(modifier.get("id", "")) != "act1_harder_move_weights":
+			continue
+		for change in modifier.get("params", {}).get("changes", []):
+			if String(change.get("enemy_id", "")) != enemy_id:
+				continue
+			result += int(change.get("move_weight_delta", {}).get(move_id, 0))
+	return max(0, result)

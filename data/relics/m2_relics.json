@@ -1,0 +1,109 @@
+[
+  {
+    "id": "charcoal_compass",
+    "name": "炭针罗盘",
+    "localization_key": "relic.charcoal_compass",
+    "rarity": "starter",
+    "unique": true,
+    "design_purpose": "初始遗物，战斗开始提供小额防御。",
+    "triggers": [
+      {
+        "hook": "combat_start",
+        "condition": {"op": "always"},
+        "effects": [{"op": "gain_block", "target": "player", "value": 3}],
+        "limit": {"scope": "per_combat", "count": 1}
+      }
+    ],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_pathfinder_lens",
+    "name": "寻路透镜",
+    "localization_key": "relic.pathfinder_lens",
+    "rarity": "common",
+    "unique": true,
+    "design_purpose": "奖励生成钩子测试，M2 不额外改写奖励。",
+    "triggers": [{"hook": "reward_generated", "condition": {"op": "always"}, "effects": [], "limit": {"scope": "per_node", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_bankers_ember",
+    "name": "钱匣余烬",
+    "localization_key": "relic.bankers_ember",
+    "rarity": "common",
+    "unique": true,
+    "design_purpose": "节点完成时获得少量金币。",
+    "triggers": [{"hook": "node_completed", "condition": {"op": "always"}, "effects": [{"op": "gain_gold", "value": 3}], "limit": {"scope": "per_node", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_quiet_bellows",
+    "name": "静风箱",
+    "localization_key": "relic.quiet_bellows",
+    "rarity": "common",
+    "unique": true,
+    "design_purpose": "战斗开始格挡内容校验样例。",
+    "triggers": [{"hook": "combat_start", "condition": {"op": "always"}, "effects": [{"op": "gain_block", "target": "player", "value": 4}], "limit": {"scope": "per_combat", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_split_flint",
+    "name": "裂纹燧石",
+    "localization_key": "relic.split_flint",
+    "rarity": "common",
+    "unique": true,
+    "design_purpose": "普通遗物池去重样例。",
+    "triggers": [{"hook": "after_card_played", "condition": {"op": "always"}, "effects": [], "limit": {"scope": "per_turn", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_cooling_rivet",
+    "name": "冷却铆钉",
+    "localization_key": "relic.cooling_rivet",
+    "rarity": "common",
+    "unique": true,
+    "design_purpose": "普通遗物池去重样例。",
+    "triggers": [{"hook": "turn_end", "condition": {"op": "always"}, "effects": [], "limit": {"scope": "per_turn", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_ashwood_token",
+    "name": "灰木筹码",
+    "localization_key": "relic.ashwood_token",
+    "rarity": "common",
+    "unique": true,
+    "design_purpose": "商店池遗物样例。",
+    "triggers": [{"hook": "shop_entered", "condition": {"op": "always"}, "effects": [], "limit": {"scope": "per_node", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_hollow_canteen",
+    "name": "空心水壶",
+    "localization_key": "relic.hollow_canteen",
+    "rarity": "common",
+    "unique": true,
+    "design_purpose": "休息处钩子样例。",
+    "triggers": [{"hook": "rest_site_entered", "condition": {"op": "always"}, "effects": [], "limit": {"scope": "per_node", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_trailward_knot",
+    "name": "护径绳结",
+    "localization_key": "relic.trailward_knot",
+    "rarity": "boss",
+    "unique": true,
+    "design_purpose": "Boss 遗物池样例。",
+    "triggers": [{"hook": "act_completed", "condition": {"op": "always"}, "effects": [], "limit": {"scope": "per_run", "count": 1}}],
+    "state_schema": {}
+  },
+  {
+    "id": "relic_brass_seed",
+    "name": "铜色种子",
+    "localization_key": "relic.brass_seed",
+    "rarity": "boss",
+    "unique": true,
+    "design_purpose": "Boss 遗物池样例。",
+    "triggers": [{"hook": "act_completed", "condition": {"op": "always"}, "effects": [], "limit": {"scope": "per_run", "count": 1}}],
+    "state_schema": {}
+  }
+]
