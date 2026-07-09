@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M2 ActConfig",
+  "type": "object",
+  "required": ["id", "floor_count", "start_node_count", "nodes_per_floor", "boss_floor", "node_weights", "constraints", "pools"],
+  "properties": {
+    "id": {"type": "string", "minLength": 1},
+    "floor_count": {"const": 12},
+    "start_node_count": {"type": "integer", "minimum": 1},
+    "boss_floor": {"const": 12},
+    "nodes_per_floor": {
+      "type": "object",
+      "required": ["min", "max"],
+      "properties": {
+        "min": {"type": "integer", "minimum": 1},
+        "max": {"type": "integer", "minimum": 1}
+      }
+    },
+    "node_weights": {"type": "object"},
+    "constraints": {"type": "object"},
+    "pools": {"type": "object"}
+  }
+}

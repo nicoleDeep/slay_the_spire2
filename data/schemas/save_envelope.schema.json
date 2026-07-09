@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M2 SaveEnvelope",
+  "type": "object",
+  "required": ["schema_version", "content_version", "save_id", "written_at_utc", "checksum", "run_state"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "content_version": {"const": "m2-v1"},
+    "save_id": {"const": "active_run"},
+    "written_at_utc": {"type": "string"},
+    "checksum": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "run_state": {"type": "object"}
+  }
+}

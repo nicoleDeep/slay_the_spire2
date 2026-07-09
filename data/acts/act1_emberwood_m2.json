@@ -1,0 +1,38 @@
+{
+  "id": "act1_emberwood_m2",
+  "floor_count": 12,
+  "start_node_count": 3,
+  "nodes_per_floor": {"min": 3, "max": 4},
+  "boss_floor": 12,
+  "node_weights": {
+    "normal": 45,
+    "event": 25,
+    "shop": 10,
+    "elite": 12,
+    "rest": 8,
+    "treasure": 5
+  },
+  "floor_rules": [
+    {"floors": [1, 2], "force_type": "normal"},
+    {"floors": [3, 4, 5], "weight_multiplier": {"elite": 0.5}},
+    {"floors": [10], "weight_multiplier": {"rest": 0.0, "shop": 2.0}},
+    {"floors": [11], "force_type": "rest"},
+    {"floors": [12], "force_type": "boss"}
+  ],
+  "constraints": {
+    "max_out_degree": 3,
+    "min_rest_gap": 2,
+    "max_elites_per_path": 3,
+    "require_elite_free_path": true,
+    "require_pre_boss_recovery": true
+  },
+  "pools": {
+    "normal_encounters": ["mote_biter", "glass_mite", "char_spitter", "lantern_thief", "hollow_guard", "ash_flock_a", "ash_flock_b", "warm_root"],
+    "elite_encounters": ["kiln_knight", "mirror_cinder"],
+    "bosses": ["brass_heartwood"],
+    "events": "pool_event_act1_m2",
+    "shops": "pool_shop_act1_m2",
+    "treasures": "pool_treasure_act1_m2"
+  },
+  "rest_definition_id": "rest_emberwood_m2"
+}

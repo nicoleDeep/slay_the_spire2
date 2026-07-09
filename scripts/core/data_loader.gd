@@ -46,15 +46,18 @@ static func load_content_database() -> Dictionary:
 	var cards := load_json_array("res://data/cards/ember_ranger_cards.json")
 	var enemies := load_json_array("res://data/enemies/m1_enemies.json")
 	var difficulties := load_json_array("res://data/difficulties/difficulties.json")
+	var acts := [load_json_object("res://data/acts/act1_emberwood_m2.json")]
 	return {
 		"characters": index_by_id(characters),
 		"cards": index_by_id(cards),
 		"enemies": index_by_id(enemies),
 		"difficulties": index_by_id(difficulties),
+		"acts": index_by_id(acts),
 		"raw": {
 			"characters": characters,
 			"cards": cards,
 			"enemies": enemies,
-			"difficulties": difficulties
+			"difficulties": difficulties,
+			"acts": acts
 		}
 	}

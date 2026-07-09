@@ -76,8 +76,6 @@ func play_card(hand_index: int, target_index: int = 0) -> bool:
 	for effect in card.effects:
 		_resolve_effect(effect, "player", target_index)
 		_check_combat_end()
-		if state.phase in ["victory", "defeat"]:
-			break
 	state.discard_pile.append(card_id)
 	_check_combat_end()
 	return true

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M2 RNG Snapshot",
+  "type": "object",
+  "required": ["algorithm", "seed", "draw_count", "state"],
+  "properties": {
+    "algorithm": {"const": "godot_rng_v1"},
+    "seed": {"type": "integer"},
+    "draw_count": {"type": "integer", "minimum": 0},
+    "state": {"type": "integer"},
+    "seed_exact": {"type": "string", "pattern": "^-?[0-9]+$"},
+    "state_exact": {"type": "string", "pattern": "^-?[0-9]+$"}
+  }
+}

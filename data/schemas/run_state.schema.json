@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "STS2 M2 RunState",
+  "type": "object",
+  "required": [
+    "run_id", "run_seed", "character_id", "difficulty_id", "difficulty_snapshot",
+    "phase", "act_id", "hp", "max_hp", "gold", "deck", "map", "rng_streams"
+  ],
+  "properties": {
+    "run_id": {"type": "string", "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"},
+    "run_seed": {"type": "integer"},
+    "character_id": {"const": "ember_ranger"},
+    "difficulty_id": {"enum": ["D0", "D1", "D2", "D3"]},
+    "phase": {"enum": ["setup", "map", "node_active", "reward_pending", "node_commit_pending", "act_complete", "defeated"]},
+    "hp": {"type": "integer", "minimum": 0},
+    "max_hp": {"type": "integer", "minimum": 1},
+    "gold": {"type": "integer", "minimum": 0},
+    "deck": {"type": "array"},
+    "map": {"type": "object"},
+    "rng_streams": {
+      "type": "object",
+      "required": ["map_rng", "combat_rng", "reward_rng", "event_rng", "shop_rng"]
+    }
+  }
+}

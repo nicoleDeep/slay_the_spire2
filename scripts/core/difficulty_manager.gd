@@ -16,6 +16,22 @@ func get_profile(id: String) -> Dictionary:
 	return profiles.get(id, profiles.get("D1", {})).duplicate(true)
 
 
+func has_profile(id: String) -> bool:
+	return profiles.has(id)
+
+
+func create_snapshot(id: String) -> Dictionary:
+	if not profiles.has(id):
+		return {}
+	var profile: Dictionary = profiles[id]
+	return {
+		"profile_id": id,
+		"profile_version": int(profile.get("profile_version", 1)),
+		"base_adjustments": profile.get("base_adjustments", {}).duplicate(true),
+		"modifiers": profile.get("modifiers", []).duplicate(true)
+	}
+
+
 func get_adjustment(profile: Dictionary, key: String, fallback: Variant) -> Variant:
 	return profile.get("base_adjustments", {}).get(key, fallback)
 

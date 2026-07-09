@@ -1,21 +1,19 @@
 extends RefCounted
 class_name RngStream
 
+const ALGORITHM := "godot_rng_v1"
+
 var seed_value: int
 var draw_count: int = 0
-var _state: int
+var _rng := RandomNumberGenerator.new()
 
-const _MODULUS := 2147483648
-const _MASK := 2147483647
-const _MULTIPLIER := 1103515245
-const _INCREMENT := 12345
-
-func _init(initial_seed: int = 1, previous_draw_count: int = 0) -> void:
+func _init(initial_seed: int = 1, previous_snapshot: Dictionary = {}) -> void:
 	seed_value = initial_seed
-	_state = _normalize_seed(seed_value)
+	_rng.seed = seed_value
 	draw_count = 0
-	for i in range(previous_draw_count):
-		next_float()
+	if not previous_snapshot.is_empty():
+		var result := restore(previous_snapshot)
+		assert(result.ok, String(result.get("message", "Invalid RNG snapshot")))
 
 
 func randf() -> float:
@@ -28,15 +26,14 @@ func randi_range(min_value: int, max_value: int) -> int:
 
 func next_float() -> float:
 	draw_count += 1
-	return float(_next_int()) / float(_MASK)
+	return _rng.randf()
 
 
 func next_int_range(min_value: int, max_value: int) -> int:
 	if max_value < min_value:
 		return min_value
 	draw_count += 1
-	var span := max_value - min_value + 1
-	return min_value + (_next_int() % span)
+	return _rng.randi_range(min_value, max_value)
 
 
 func pick_weighted(items: Array, weight_key: String = "weight") -> Dictionary:
@@ -67,17 +64,20 @@ func shuffle_array(values: Array) -> void:
 
 func snapshot() -> Dictionary:
 	return {
+		"algorithm": ALGORITHM,
 		"seed": seed_value,
 		"draw_count": draw_count,
-		"state": _state
+		"state": _rng.state
 	}
 
 
-func _next_int() -> int:
-	_state = (_state * _MULTIPLIER + _INCREMENT) % _MODULUS
-	return _state & _MASK
-
-
-func _normalize_seed(value: int) -> int:
-	var normalized: int = int(abs(value)) % _MODULUS
-	return 1 if normalized == 0 else normalized
+func restore(value: Dictionary) -> Dictionary:
+	if String(value.get("algorithm", "")) != ALGORITHM:
+		return {"ok": false, "code": "ERR_RNG_ALGORITHM", "message": "Unsupported RNG algorithm"}
+	if int(value.get("draw_count", -1)) < 0:
+		return {"ok": false, "code": "ERR_RNG_DRAW_COUNT", "message": "RNG draw_count must be non-negative"}
+	seed_value = int(value.get("seed", 0))
+	_rng.seed = seed_value
+	_rng.state = int(value.get("state", 0))
+	draw_count = int(value.draw_count)
+	return {"ok": true, "code": "OK"}

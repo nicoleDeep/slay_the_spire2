@@ -6,7 +6,9 @@ const ALLOWED_TARGETS := ["self", "player", "selected_enemy", "all_enemies", "ra
 const ALLOWED_CARD_TYPES := ["attack", "skill", "power", "status", "curse", "special"]
 const ALLOWED_RARITIES := ["starter", "common", "uncommon", "rare", "special"]
 const ALLOWED_INTENTS := ["attack", "defend", "attack_defend", "unknown"]
-const ALLOWED_DIFFICULTIES := ["D0", "D1"]
+const ALLOWED_DIFFICULTIES := ["D0", "D1", "D2", "D3"]
+const ALLOWED_NODE_TYPES := ["normal", "elite", "boss", "shop", "event", "rest", "treasure"]
+const ALLOWED_MODIFIERS := ["more_safe_routes", "remove_cost_up", "more_elite_routes", "act1_harder_move_weights"]
 
 static func validate_all(database: Dictionary) -> Dictionary:
 	var errors: Array[String] = []
@@ -15,6 +17,7 @@ static func validate_all(database: Dictionary) -> Dictionary:
 	var characters: Dictionary = database.get("characters", {})
 	var enemies: Dictionary = database.get("enemies", {})
 	var difficulties: Dictionary = database.get("difficulties", {})
+	var acts: Dictionary = database.get("acts", {})
 
 	for id in characters.keys():
 		_validate_character(id, characters[id], cards, errors)
@@ -27,12 +30,18 @@ static func validate_all(database: Dictionary) -> Dictionary:
 			errors.append("Missing required difficulty profile: %s" % id)
 	for id in difficulties.keys():
 		_validate_difficulty(id, difficulties[id], errors)
+	for id in acts.keys():
+		_validate_act(id, acts[id], enemies, errors)
 	if cards.size() < 5:
 		errors.append("M1 requires at least 5 cards; found %d" % cards.size())
 	if characters.size() < 1:
 		errors.append("M1 requires at least 1 character")
 	if enemies.size() < 1:
 		errors.append("M1 requires at least 1 enemy")
+	if not acts.has("act1_emberwood_m2"):
+		errors.append("Missing required M2 Act: act1_emberwood_m2")
+	if _contains_deprecated_id(database.get("raw", {})):
+		errors.append("ERR_DEPRECATED_CONTENT_ID: role_forge_wayfarer/fw_* is not allowed")
 	return {
 		"ok": errors.is_empty(),
 		"errors": errors,
@@ -97,10 +106,39 @@ static func _validate_difficulty(id: String, difficulty: Dictionary, errors: Arr
 		errors.append("Difficulty %s missing base_adjustments" % id)
 		return
 	var adjustments: Dictionary = difficulty.base_adjustments
-	for key in ["enemy_hp_multiplier", "enemy_damage_multiplier", "elite_hp_multiplier", "boss_hp_multiplier"]:
+	for key in [
+		"enemy_hp_multiplier", "enemy_damage_multiplier", "elite_hp_multiplier",
+		"boss_hp_multiplier", "shop_price_multiplier", "remove_cost_multiplier",
+		"rest_heal_multiplier", "potion_drop_multiplier"
+	]:
 		var value := float(adjustments.get(key, 1.0))
 		if value <= 0.0 or value > 3.0:
 			errors.append("Difficulty %s %s out of range: %s" % [id, key, value])
+	for modifier in difficulty.get("modifiers", []):
+		var modifier_id := String(modifier.get("id", ""))
+		if not ALLOWED_MODIFIERS.has(modifier_id):
+			errors.append("Difficulty %s references unknown modifier %s" % [id, modifier_id])
+
+
+static func _validate_act(id: String, act: Dictionary, enemies: Dictionary, errors: Array[String]) -> void:
+	if int(act.get("floor_count", 0)) != 12 or int(act.get("boss_floor", 0)) != 12:
+		errors.append("Act %s must use the frozen 12-floor M2 profile" % id)
+	if int(act.get("start_node_count", 0)) < 1:
+		errors.append("Act %s has no start nodes" % id)
+	var weights: Dictionary = act.get("node_weights", {})
+	for node_type in ALLOWED_NODE_TYPES:
+		if node_type == "boss":
+			continue
+		if int(weights.get(node_type, -1)) < 0:
+			errors.append("Act %s has invalid weight for %s" % [id, node_type])
+	var pools: Dictionary = act.get("pools", {})
+	for pool_name in ["normal_encounters", "elite_encounters", "bosses"]:
+		var pool: Array = pools.get(pool_name, [])
+		if pool.is_empty():
+			errors.append("Act %s pool %s is empty" % [id, pool_name])
+		for enemy_id in pool:
+			if not enemies.has(String(enemy_id)):
+				errors.append("Act %s pool %s references missing enemy %s" % [id, pool_name, enemy_id])
 
 
 static func _validate_effects(effects: Array, scope: String, errors: Array[String]) -> void:
@@ -131,3 +169,17 @@ static func _require_string(data: Dictionary, key: String, scope: String, errors
 static func _require_int_min(data: Dictionary, key: String, minimum: int, scope: String, errors: Array[String]) -> void:
 	if not data.has(key) or int(data[key]) < minimum:
 		errors.append("%s field %s must be >= %d" % [scope, key, minimum])
+
+
+static func _contains_deprecated_id(value: Variant) -> bool:
+	if value is String:
+		return value == "role_forge_wayfarer" or value.begins_with("fw_")
+	if value is Array:
+		for item in value:
+			if _contains_deprecated_id(item):
+				return true
+	if value is Dictionary:
+		for key in value.keys():
+			if _contains_deprecated_id(key) or _contains_deprecated_id(value[key]):
+				return true
+	return false

@@ -2,35 +2,120 @@
   {
     "id": "D0",
     "name": "入门",
+    "profile_version": 1,
     "base_adjustments": {
-      "enemy_hp_multiplier": 0.9,
+      "enemy_hp_multiplier": 0.90,
       "enemy_damage_multiplier": 0.85,
-      "elite_hp_multiplier": 0.9,
-      "boss_hp_multiplier": 0.9,
+      "elite_hp_multiplier": 1.00,
+      "boss_hp_multiplier": 1.00,
       "starting_max_hp_delta": 5,
       "starting_gold_delta": 10,
-      "potion_drop_multiplier": 1.0,
-      "shop_price_multiplier": 1.0,
-      "rest_heal_multiplier": 1.0,
-      "event_cost_multiplier": 1.0
+      "potion_drop_multiplier": 1.20,
+      "shop_price_multiplier": 0.90,
+      "remove_cost_multiplier": 1.00,
+      "rest_heal_multiplier": 1.15,
+      "event_cost_multiplier": 1.00
     },
-    "modifiers": []
+    "modifiers": [
+      {
+        "id": "more_safe_routes",
+        "system": "map",
+        "phase": "after_node_type_assignment",
+        "priority": 100,
+        "params": {"elite_weight_delta": -4, "minimum_elite_free_paths": 2}
+      }
+    ]
   },
   {
     "id": "D1",
     "name": "标准",
+    "profile_version": 1,
     "base_adjustments": {
-      "enemy_hp_multiplier": 1.0,
-      "enemy_damage_multiplier": 1.0,
-      "elite_hp_multiplier": 1.0,
-      "boss_hp_multiplier": 1.0,
+      "enemy_hp_multiplier": 1.00,
+      "enemy_damage_multiplier": 1.00,
+      "elite_hp_multiplier": 1.00,
+      "boss_hp_multiplier": 1.00,
       "starting_max_hp_delta": 0,
       "starting_gold_delta": 0,
-      "potion_drop_multiplier": 1.0,
-      "shop_price_multiplier": 1.0,
-      "rest_heal_multiplier": 1.0,
-      "event_cost_multiplier": 1.0
+      "potion_drop_multiplier": 1.00,
+      "shop_price_multiplier": 1.00,
+      "remove_cost_multiplier": 1.00,
+      "rest_heal_multiplier": 1.00,
+      "event_cost_multiplier": 1.00
     },
     "modifiers": []
+  },
+  {
+    "id": "D2",
+    "name": "进阶",
+    "profile_version": 1,
+    "base_adjustments": {
+      "enemy_hp_multiplier": 1.00,
+      "enemy_damage_multiplier": 1.06,
+      "elite_hp_multiplier": 1.00,
+      "boss_hp_multiplier": 1.00,
+      "starting_max_hp_delta": 0,
+      "starting_gold_delta": 0,
+      "potion_drop_multiplier": 1.00,
+      "shop_price_multiplier": 1.00,
+      "remove_cost_multiplier": 1.10,
+      "rest_heal_multiplier": 0.90,
+      "event_cost_multiplier": 1.00
+    },
+    "modifiers": [
+      {
+        "id": "remove_cost_up",
+        "system": "shop",
+        "phase": "shop_price_finalized",
+        "priority": 100,
+        "params": {"multiplier": 1.10}
+      }
+    ]
+  },
+  {
+    "id": "D3",
+    "name": "困难",
+    "profile_version": 1,
+    "base_adjustments": {
+      "enemy_hp_multiplier": 1.00,
+      "enemy_damage_multiplier": 1.08,
+      "elite_hp_multiplier": 1.10,
+      "boss_hp_multiplier": 1.08,
+      "starting_max_hp_delta": 0,
+      "starting_gold_delta": 0,
+      "potion_drop_multiplier": 0.85,
+      "shop_price_multiplier": 1.08,
+      "remove_cost_multiplier": 1.15,
+      "rest_heal_multiplier": 0.82,
+      "event_cost_multiplier": 1.00
+    },
+    "modifiers": [
+      {
+        "id": "remove_cost_up",
+        "system": "shop",
+        "phase": "shop_price_finalized",
+        "priority": 100,
+        "params": {"multiplier": 1.15}
+      },
+      {
+        "id": "more_elite_routes",
+        "system": "map",
+        "phase": "after_node_type_assignment",
+        "priority": 100,
+        "params": {"elite_weight_delta": 8, "preserve_safe_route": true}
+      },
+      {
+        "id": "act1_harder_move_weights",
+        "system": "enemy",
+        "phase": "enemy_move_selected",
+        "priority": 100,
+        "params": {
+          "changes": [
+            {"enemy_id": "glass_mite", "move_weight_delta": {"stab": 10, "brace": -10}},
+            {"enemy_id": "kiln_knight", "move_weight_delta": {"heavy_swing": 10, "shield_heat": -10}}
+          ]
+        }
+      }
+    ]
   }
 ]
