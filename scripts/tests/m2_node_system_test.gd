@@ -61,6 +61,7 @@ func _test_five_combat_reward_path() -> void:
 		_assert(resolved.ok, "resolve node failed: %s" % str(resolved))
 	_assert(combats >= 5, "expected at least five combat nodes, got %d" % combats)
 	_assert(int(run.get_state().stats.cards_skipped) >= 5, "combat rewards should be skippable")
+	_test_direct_complete_rejected()
 
 
 func _test_shop_edges() -> void:
@@ -82,6 +83,8 @@ func _test_shop_edges() -> void:
 	_assert(int(run_state.shop_remove_count) == 1, "shop remove count should increment")
 	var repeat_remove := shop_manager.remove_card(run_state, opened.shop, String(run_state.deck[0].instance_id))
 	_assert(not repeat_remove.ok and repeat_remove.code == "ERR_REMOVE_USED", "same shop remove service should be one-shot")
+	var ids := _deck_instance_ids(run_state)
+	_assert(ids.size() == run_state.deck.size(), "shop buy after removal must keep card instance IDs unique")
 
 
 func _test_event_edges() -> void:
@@ -99,6 +102,11 @@ func _test_event_edges() -> void:
 	run_state = _base_run_state("D1")
 	run_state.gold = 50
 	opened = event_manager.open_event("pool_event_act1_m2", run_state, RngStream.new(4001))
+	var gold_before := int(run_state.gold)
+	var deck_before: Array = run_state.deck.duplicate(true)
+	var missing_selection: Dictionary = event_manager.choose_option(run_state, opened.event, "pay_gold_upgrade")
+	_assert(not missing_selection.ok and missing_selection.code == "ERR_CARD_INSTANCE_ID", "paid event with missing upgrade selection should fail")
+	_assert(int(run_state.gold) == gold_before and run_state.deck == deck_before, "failed event effect must not partially spend gold or mutate deck")
 	var upgraded: Dictionary = event_manager.choose_option(run_state, opened.event, "pay_gold_upgrade", {"card_instance_id": String(run_state.deck[0].instance_id)})
 	_assert(upgraded.ok, "paid event upgrade failed: %s" % str(upgraded))
 	_assert(int(run_state.gold) == 10 and int(run_state.deck[0].upgrade) == 1, "event should charge gold then upgrade selected card")
@@ -140,6 +148,15 @@ func _test_potion_and_relic_edges() -> void:
 	_assert(triggered.ok and int(run_state.gold) == gold_before + 3, "node_completed relic should trigger once")
 	var triggered_again := relic_manager.trigger(run_state, "node_completed", {"node_id": "n1", "depth": 0})
 	_assert(triggered_again.ok and int(run_state.gold) == gold_before + 3, "per-node relic limit should block repeat")
+	var combat := CombatManager.new(database)
+	run_state.potions = ["potion_cinder_burst", null, null]
+	var combat_state := combat.start_run_combat(run_state, ["mote_biter"], RngStream.new(5001))
+	_assert(int(combat_state.player.block) >= 3, "charcoal_compass should grant combat-start block")
+	var invalid_potion := combat.use_potion(run_state, 0, 99)
+	_assert(not invalid_potion.ok and invalid_potion.code == "ERR_POTION_TARGET", "combat potion should reject invalid target")
+	_assert(run_state.potions[0] == "potion_cinder_burst", "invalid potion target must not consume potion")
+	var valid_potion := combat.use_potion(run_state, 0, 0)
+	_assert(valid_potion.ok and run_state.potions[0] == null, "valid combat potion should resolve and consume")
 
 
 func _test_difficulty_four_systems() -> void:
@@ -185,6 +202,11 @@ func _test_enemy_move_constraints() -> void:
 func _resolve_pending(run: RunManager) -> Dictionary:
 	var pending: Dictionary = run.get_state().get("pending_resolution", {})
 	match String(pending.get("kind", "")):
+		"combat":
+			var combat := run.debug_autoresolve_current_combat_victory()
+			if not combat.ok:
+				return combat
+			return _resolve_pending(run)
 		"reward":
 			return run.reward_take_all_skip_card(true)
 		"shop":
@@ -199,6 +221,47 @@ func _resolve_pending(run: RunManager) -> Dictionary:
 		"rest":
 			return run.rest_resolve("heal")
 	return {"ok": false, "code": "ERR_TEST_PENDING_KIND"}
+
+
+func _test_direct_complete_rejected() -> void:
+	for node_type in ["normal", "shop", "event", "rest"]:
+		var run := RunManager.new(database, "user://sla11_direct_%s.json" % node_type)
+		var created := run.create_run("ember_ranger", "D1", 12000 + node_type.length())
+		_assert(created.ok, "direct-complete run create failed")
+		var target := _advance_until_available_type(run, node_type)
+		_assert(not target.is_empty(), "could not find node type for direct-complete test: %s" % node_type)
+		if target.is_empty():
+			continue
+		var entered := run.enter_node(String(target.id))
+		_assert(entered.ok, "direct-complete enter failed for %s: %s" % [node_type, str(entered)])
+		var direct := run.complete_node(String(target.id), "bypass-resolution")
+		_assert(not direct.ok and direct.code == "ERR_NODE_RESOLUTION_REQUIRED", "direct complete should be rejected for %s" % node_type)
+		_cleanup("user://sla11_direct_%s.json" % node_type)
+
+
+func _advance_until_available_type(run: RunManager, node_type: String) -> Dictionary:
+	var guard := 0
+	while guard < 30:
+		guard += 1
+		for floor in run.get_state().map.floors:
+			for node in floor.nodes:
+				if String(node.status) == "available" and String(node.type) == node_type:
+					return node
+		var next := _pick_available_node(run.get_state(), false)
+		if next.is_empty():
+			next = _pick_available_node(run.get_state(), true)
+		if next.is_empty():
+			return {}
+		var entered := run.enter_node(String(next.id))
+		if not entered.ok:
+			return {}
+		var started := run.start_current_node_resolution()
+		if not started.ok:
+			return {}
+		var resolved := _resolve_pending(run)
+		if not resolved.ok:
+			return {}
+	return {}
 
 
 func _pick_available_node(run_state: Dictionary, prefer_combat: bool) -> Dictionary:
@@ -242,6 +305,16 @@ func _base_run_state(difficulty_id: String) -> Dictionary:
 			run_state.deck.append({"instance_id": "card-%03d" % index, "card_id": String(entry.card_id), "upgrade": 0, "run_cost_delta": 0})
 			index += 1
 	return run_state
+
+
+func _deck_instance_ids(run_state: Dictionary) -> Array:
+	var ids := []
+	for card in run_state.get("deck", []):
+		var id := String(card.get("instance_id", ""))
+		if ids.has(id):
+			continue
+		ids.append(id)
+	return ids
 
 
 func _count_nodes_of_type(map_data: Dictionary, node_type: String) -> int:

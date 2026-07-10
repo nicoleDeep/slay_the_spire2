@@ -5,17 +5,20 @@ const DataLoader = preload("res://scripts/core/data_loader.gd")
 const DifficultyManager = preload("res://scripts/core/difficulty_manager.gd")
 const MapGenerator = preload("res://scripts/map/map_generator.gd")
 const MapValidator = preload("res://scripts/map/map_validator.gd")
+const CombatManager = preload("res://scripts/combat/combat_manager.gd")
 const RewardManager = preload("res://scripts/rewards/reward_manager.gd")
 const ShopManager = preload("res://scripts/shop/shop_manager.gd")
 const EventManager = preload("res://scripts/events/event_manager.gd")
 const RestSiteManager = preload("res://scripts/rest/rest_site_manager.gd")
 const RelicManager = preload("res://scripts/relics/relic_manager.gd")
+const RngStream = preload("res://scripts/core/rng_stream.gd")
 const RngStreamRegistry = preload("res://scripts/core/rng_stream_registry.gd")
 const SaveManager = preload("res://scripts/save/save_manager.gd")
 
 var database: Dictionary
 var difficulty_manager: DifficultyManager
 var map_generator := MapGenerator.new()
+var combat_manager: CombatManager
 var reward_manager: RewardManager
 var shop_manager: ShopManager
 var event_manager: EventManager
@@ -31,6 +34,7 @@ var save_blocked := false
 func _init(content_database: Dictionary = {}, target_save_path: String = SaveManager.DEFAULT_PATH) -> void:
 	database = content_database if not content_database.is_empty() else DataLoader.load_content_database()
 	difficulty_manager = DifficultyManager.new(database)
+	combat_manager = CombatManager.new(database)
 	reward_manager = RewardManager.new(database)
 	shop_manager = ShopManager.new(database)
 	event_manager = EventManager.new(database)
@@ -133,7 +137,12 @@ func enter_node(node_id: String) -> Dictionary:
 
 
 func complete_node(node_id: String, resolution_id: String) -> Dictionary:
-	return _commit_active_node(node_id, resolution_id)
+	var location := _find_node(node_id)
+	if location.is_empty():
+		return _error("ERR_NODE_ID", "Unknown node ID")
+	if location.node.get("resolution_id") != null and String(location.node.resolution_id) == resolution_id:
+		return {"ok": true, "code": "OK_IDEMPOTENT", "run_state": run_state.duplicate(true)}
+	return _error("ERR_NODE_RESOLUTION_REQUIRED", "Node completion must go through its subsystem resolution")
 
 
 func start_current_node_resolution() -> Dictionary:
@@ -151,20 +160,11 @@ func start_current_node_resolution() -> Dictionary:
 	var result := {}
 	match String(node.get("type", "")):
 		"normal":
-			result = _begin_reward_for_node(node, "normal_combat")
-			if result.ok:
-				run_state.stats.combats_won = int(run_state.stats.get("combats_won", 0)) + 1
+			result = _begin_combat_for_node(node, "normal_combat")
 		"elite":
-			result = _begin_reward_for_node(node, "elite_combat")
-			if result.ok:
-				run_state.stats.combats_won = int(run_state.stats.get("combats_won", 0)) + 1
-				run_state.stats.elites_won = int(run_state.stats.get("elites_won", 0)) + 1
+			result = _begin_combat_for_node(node, "elite_combat")
 		"boss":
-			result = _begin_reward_for_node(node, "boss_combat")
-			if result.ok:
-				run_state.stats.combats_won = int(run_state.stats.get("combats_won", 0)) + 1
-				if not run_state.boss_history.has(String(node.get("content_ref", ""))):
-					run_state.boss_history.append(String(node.get("content_ref", "")))
+			result = _begin_combat_for_node(node, "boss_combat")
 		"treasure":
 			result = _begin_first_entry_reward(location, node, "treasure")
 		"shop":
@@ -183,6 +183,54 @@ func start_current_node_resolution() -> Dictionary:
 	if not save_result.ok:
 		return save_result
 	return {"ok": true, "code": "OK", "pending_resolution": run_state.pending_resolution.duplicate(true)}
+
+
+func submit_combat_result(combat_result: Dictionary) -> Dictionary:
+	var resolution := _pending_resolution("combat")
+	if not resolution.ok:
+		return resolution
+	if not combat_result.get("ok", true):
+		return combat_result
+	var result_kind := String(combat_result.get("result", ""))
+	var node_id := String(run_state.pending_resolution.get("node_id", run_state.get("current_node_id", "")))
+	var location := _find_node(node_id)
+	if location.is_empty():
+		return _error("ERR_NODE_ID", "Unknown combat node")
+	var node: Dictionary = location.node
+	if not combat_result.get("combat_rng", {}).is_empty():
+		var restored := rng_registry.get_stream("combat_rng").restore(combat_result.combat_rng)
+		if not restored.ok:
+			return restored
+	if result_kind == "defeat":
+		run_state.hp = 0
+		run_state.phase = "defeated"
+		run_state.pending_resolution = null
+		return _save()
+	if result_kind != "victory":
+		return _error("ERR_COMBAT_RESULT", "Combat result must be victory or defeat")
+	run_state.hp = clampi(int(combat_result.get("player", {}).get("hp", run_state.get("hp", 1))), 0, int(run_state.get("max_hp", 1)))
+	_record_combat_victory(node)
+	var generated := _begin_reward_for_node(node, String(run_state.pending_resolution.get("source", "normal_combat")))
+	if not generated.ok:
+		return generated
+	run_state.pending_resolution = generated.pending_resolution
+	run_state.phase = "reward_pending"
+	var save_result := _save()
+	if not save_result.ok:
+		return save_result
+	return {"ok": true, "code": "OK", "pending_resolution": run_state.pending_resolution.duplicate(true)}
+
+
+func debug_autoresolve_current_combat_victory() -> Dictionary:
+	var resolution := _pending_resolution("combat")
+	if not resolution.ok:
+		return resolution
+	combat_manager.state = run_state.pending_resolution.get("combat_state", {}).duplicate(true)
+	var rng_snapshot: Dictionary = run_state.pending_resolution.get("combat_rng", {})
+	if not rng_snapshot.is_empty():
+		combat_manager.rng = RngStream.new(int(rng_snapshot.get("seed", 1)), rng_snapshot)
+	var combat_result := combat_manager.debug_force_victory()
+	return submit_combat_result(combat_result)
 
 
 func reward_claim_gold() -> Dictionary:
@@ -375,6 +423,37 @@ func _begin_reward_for_node(node: Dictionary, source: String) -> Dictionary:
 	if not trigger_result.ok:
 		return trigger_result
 	return {"ok": true, "code": "OK", "pending_resolution": reward}
+
+
+func _begin_combat_for_node(node: Dictionary, source: String) -> Dictionary:
+	var encounter_id := String(node.get("content_ref", ""))
+	if encounter_id.is_empty() or not database.get("enemies", {}).has(encounter_id):
+		return _error("ERR_ENCOUNTER_ID", "Combat node has no valid encounter", {"content_ref": encounter_id})
+	var combat_state := combat_manager.start_run_combat(run_state, [encounter_id], rng_registry.get_stream("combat_rng"))
+	if String(combat_state.get("phase", "")) == "config_error":
+		return _error("ERR_COMBAT_START", "Combat failed to start")
+	var resolution := {
+		"kind": "combat",
+		"resolution_id": "combat-%s" % String(node.get("id", run_state.get("current_node_id", ""))),
+		"source": source,
+		"node_id": String(node.get("id", run_state.get("current_node_id", ""))),
+		"encounter_id": encounter_id,
+		"combat_state": combat_state,
+		"combat_rng": combat_state.get("rng", {}).duplicate(true),
+		"complete": false
+	}
+	return {"ok": true, "code": "OK", "pending_resolution": resolution}
+
+
+func _record_combat_victory(node: Dictionary) -> void:
+	run_state.stats.combats_won = int(run_state.stats.get("combats_won", 0)) + 1
+	match String(node.get("type", "")):
+		"elite":
+			run_state.stats.elites_won = int(run_state.stats.get("elites_won", 0)) + 1
+		"boss":
+			var boss_id := String(node.get("content_ref", ""))
+			if not run_state.boss_history.has(boss_id):
+				run_state.boss_history.append(boss_id)
 
 
 func _begin_first_entry_reward(location: Dictionary, node: Dictionary, source: String) -> Dictionary:

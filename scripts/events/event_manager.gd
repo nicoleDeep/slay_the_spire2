@@ -65,6 +65,9 @@ func choose_option(run_state: Dictionary, event_instance: Dictionary, option_id:
 	var cost_check: Dictionary = _validate_costs(run_state, option.get("costs", []))
 	if not cost_check.ok:
 		return cost_check
+	var effect_check: Dictionary = _validate_effects(run_state, option.get("effects", []), selection)
+	if not effect_check.ok:
+		return effect_check
 	for cost in option.get("costs", []):
 		_apply_effect(run_state, cost, selection)
 	for effect in option.get("effects", []):
@@ -124,6 +127,21 @@ func _validate_costs(run_state: Dictionary, costs: Array) -> Dictionary:
 	return {"ok": true, "code": "OK"}
 
 
+func _validate_effects(run_state: Dictionary, effects: Array, selection: Dictionary) -> Dictionary:
+	for effect in effects:
+		match String(effect.get("op", "")):
+			"upgrade_card":
+				var card_result := _find_deck_card(run_state, String(selection.get("card_instance_id", "")))
+				if card_result.is_empty():
+					return _error("ERR_CARD_INSTANCE_ID", "Missing card selection")
+				if int(card_result.card.get("upgrade", 0)) > 0:
+					return _error("ERR_CARD_NOT_UPGRADABLE", "Card is already upgraded")
+			"remove_card":
+				if _find_deck_card(run_state, String(selection.get("card_instance_id", ""))).is_empty():
+					return _error("ERR_CARD_INSTANCE_ID", "Missing card selection")
+	return {"ok": true, "code": "OK"}
+
+
 func _apply_effect(run_state: Dictionary, effect: Dictionary, selection: Dictionary) -> Dictionary:
 	match String(effect.get("op", "")):
 		"gain_gold":
@@ -142,21 +160,31 @@ func _apply_effect(run_state: Dictionary, effect: Dictionary, selection: Diction
 
 
 func _upgrade_card(run_state: Dictionary, card_instance_id: String) -> Dictionary:
-	for index in range(run_state.get("deck", []).size()):
-		if String(run_state.deck[index].get("instance_id", "")) == card_instance_id:
-			if int(run_state.deck[index].get("upgrade", 0)) > 0:
-				return _error("ERR_CARD_NOT_UPGRADABLE", "Card is already upgraded")
-			run_state.deck[index].upgrade = 1
-			return {"ok": true, "code": "OK"}
-	return _error("ERR_CARD_INSTANCE_ID", "Missing card selection")
+	var found := _find_deck_card(run_state, card_instance_id)
+	if found.is_empty():
+		return _error("ERR_CARD_INSTANCE_ID", "Missing card selection")
+	if int(found.card.get("upgrade", 0)) > 0:
+		return _error("ERR_CARD_NOT_UPGRADABLE", "Card is already upgraded")
+	run_state.deck[int(found.index)].upgrade = 1
+	return {"ok": true, "code": "OK"}
 
 
 func _remove_card(run_state: Dictionary, card_instance_id: String) -> Dictionary:
-	for index in range(run_state.get("deck", []).size()):
-		if String(run_state.deck[index].get("instance_id", "")) == card_instance_id:
-			run_state.deck.remove_at(index)
-			return {"ok": true, "code": "OK"}
+	var found := _find_deck_card(run_state, card_instance_id)
+	if not found.is_empty():
+		run_state.deck.remove_at(int(found.index))
+		return {"ok": true, "code": "OK"}
 	return _error("ERR_CARD_INSTANCE_ID", "Missing card selection")
+
+
+func _find_deck_card(run_state: Dictionary, card_instance_id: String) -> Dictionary:
+	if card_instance_id.is_empty():
+		return {}
+	for index in range(run_state.get("deck", []).size()):
+		var card: Dictionary = run_state.deck[index]
+		if String(card.get("instance_id", "")) == card_instance_id:
+			return {"index": index, "card": card}
+	return {}
 
 
 func _error(code: String, message: String, details: Dictionary = {}) -> Dictionary:

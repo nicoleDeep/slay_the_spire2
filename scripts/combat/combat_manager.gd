@@ -3,12 +3,16 @@ class_name CombatManager
 
 const DataLoader = preload("res://scripts/core/data_loader.gd")
 const DifficultyManager = preload("res://scripts/core/difficulty_manager.gd")
+const PotionManager = preload("res://scripts/potions/potion_manager.gd")
+const RelicManager = preload("res://scripts/relics/relic_manager.gd")
 const RngStream = preload("res://scripts/core/rng_stream.gd")
 
 const HAND_LIMIT := 10
 
 var database: Dictionary
 var difficulty_manager: DifficultyManager
+var potion_manager: PotionManager
+var relic_manager: RelicManager
 var rng: RngStream
 var state: Dictionary = {}
 var combat_log: Array[String] = []
@@ -16,6 +20,8 @@ var combat_log: Array[String] = []
 func _init(content_database: Dictionary = {}) -> void:
 	database = content_database if not content_database.is_empty() else DataLoader.load_content_database()
 	difficulty_manager = DifficultyManager.new(database)
+	potion_manager = PotionManager.new(database)
+	relic_manager = RelicManager.new(database)
 
 
 func start_combat(character_id: String, difficulty_id: String, enemy_ids: Array[String], seed: int = 1001) -> Dictionary:
@@ -49,6 +55,85 @@ func start_combat(character_id: String, difficulty_id: String, enemy_ids: Array[
 	_start_player_turn()
 	_log("Combat started: %s on %s seed %d" % [character_id, difficulty_id, seed])
 	return get_public_state()
+
+
+func start_run_combat(run_state: Dictionary, enemy_ids: Array[String], combat_rng: RngStream) -> Dictionary:
+	rng = combat_rng
+	combat_log.clear()
+	state = {
+		"phase": "starting",
+		"difficulty": run_state.get("difficulty_snapshot", {}),
+		"character_id": String(run_state.get("character_id", "")),
+		"player": {
+			"max_hp": int(run_state.get("max_hp", 1)),
+			"hp": int(run_state.get("hp", 1)),
+			"block": 0,
+			"energy": 0,
+			"max_energy": int(database.get("characters", {}).get(String(run_state.get("character_id", "")), {}).get("base_energy", 3)),
+			"gold": int(run_state.get("gold", 0))
+		},
+		"draw_pile": _build_run_deck(run_state),
+		"discard_pile": [],
+		"exhaust_pile": [],
+		"hand": [],
+		"enemies": _create_enemies(enemy_ids, run_state.get("difficulty_snapshot", {})),
+		"turn_index": 0,
+		"result": ""
+	}
+	var created := _trigger_relic_hook(run_state, "combat_created")
+	if not created.ok:
+		state.phase = "config_error"
+		return get_public_state()
+	var started := _trigger_relic_hook(run_state, "combat_start")
+	if not started.ok:
+		state.phase = "config_error"
+		return get_public_state()
+	_choose_all_enemy_intents()
+	rng.shuffle_array(state.draw_pile)
+	_start_player_turn()
+	_log("Run combat started: %s enemies %s" % [run_state.get("character_id", ""), str(enemy_ids)])
+	return get_public_state()
+
+
+func use_potion(run_state: Dictionary, slot: int, target_index: int = 0) -> Dictionary:
+	if state.get("phase", "") != "player_turn":
+		return _error("ERR_COMBAT_PHASE", "Potions can only be used during player turn")
+	var context := {
+		"use_context": "combat",
+		"target_index": target_index,
+		"valid_enemy_targets": _living_enemy_indices()
+	}
+	var used := potion_manager.use_potion(run_state, slot, context)
+	if not used.ok:
+		return used
+	var before := _trigger_relic_hook(run_state, "before_potion_used")
+	if not before.ok:
+		return before
+	for effect in used.get("effects", []):
+		_resolve_effect(effect, "player", target_index)
+		_check_combat_end()
+	var after := _trigger_relic_hook(run_state, "after_potion_used")
+	if not after.ok:
+		return after
+	_check_combat_end()
+	return {"ok": true, "code": "OK", "combat_state": get_public_state(), "combat_result": build_result()}
+
+
+func debug_force_victory() -> Dictionary:
+	for index in range(state.get("enemies", []).size()):
+		state.enemies[index].hp = 0
+	_check_combat_end()
+	return build_result()
+
+
+func build_result() -> Dictionary:
+	return {
+		"ok": true,
+		"code": "OK",
+		"result": String(state.get("result", "")),
+		"player": state.get("player", {}).duplicate(true),
+		"combat_rng": rng.snapshot() if rng != null else {}
+	}
 
 
 func can_play_card(hand_index: int, target_index: int = 0) -> bool:
@@ -125,7 +210,8 @@ func _start_player_turn() -> void:
 		return
 	state.turn_index = int(state.turn_index) + 1
 	state.phase = "player_turn"
-	state.player.block = 0
+	if int(state.turn_index) > 1:
+		state.player.block = 0
 	state.player.energy = int(state.player.max_energy)
 	draw_cards(5)
 	_log("Turn %d started: drew to %d cards" % [state.turn_index, state.hand.size()])
@@ -166,6 +252,12 @@ func _resolve_effect(effect: Dictionary, source: String, target_index: int = 0, 
 		"draw":
 			if source == "player":
 				draw_cards(int(effect.get("count", 1)))
+		"heal":
+			if source == "player":
+				state.player.hp = min(int(state.player.max_hp), int(state.player.hp) + int(effect.get("value", 0)))
+				_log("Player healed %d, hp %d/%d" % [int(effect.get("value", 0)), state.player.hp, state.player.max_hp])
+		"apply_status":
+			_log("Status op not yet materialized in M2 combat slice: %s" % String(effect.get("status", "")))
 		_:
 			_log("Unsupported op skipped: %s" % op)
 
@@ -286,6 +378,34 @@ func _build_starting_deck(character: Dictionary) -> Array:
 	return deck
 
 
+func _build_run_deck(run_state: Dictionary) -> Array:
+	var deck: Array[String] = []
+	for card in run_state.get("deck", []):
+		deck.append(String(card.get("card_id", "")))
+	return deck
+
+
+func _living_enemy_indices() -> Array:
+	var result := []
+	for index in range(state.get("enemies", []).size()):
+		if int(state.enemies[index].get("hp", 0)) > 0:
+			result.append(index)
+	return result
+
+
+func _trigger_relic_hook(run_state: Dictionary, hook: String) -> Dictionary:
+	var context := {
+		"node_id": String(run_state.get("current_node_id", "")),
+		"depth": 0
+	}
+	var triggered := relic_manager.trigger_combat(run_state, state, hook, context)
+	if not triggered.ok:
+		return triggered
+	for change in triggered.get("changes", []):
+		_log("Relic %s triggered %s" % [String(change.get("relic_id", "")), hook])
+	return triggered
+
+
 func _card(card_id: String) -> Dictionary:
 	return database.cards[card_id]
 
@@ -353,3 +473,7 @@ func _log(message: String) -> void:
 	combat_log.append(message)
 	if combat_log.size() > 80:
 		combat_log.pop_front()
+
+
+func _error(code: String, message: String, details: Dictionary = {}) -> Dictionary:
+	return {"ok": false, "code": code, "message": message, "details": details}

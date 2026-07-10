@@ -124,7 +124,7 @@ func _grant_item(run_state: Dictionary, item: Dictionary, replace_potion_slot: V
 	var content_id := String(item.get("content_id", ""))
 	match String(item.get("kind", "")):
 		"card":
-			var instance_id := "card-%03d" % int(run_state.get("deck", []).size())
+			var instance_id := _next_card_instance_id(run_state)
 			run_state.deck.append({"instance_id": instance_id, "card_id": content_id, "upgrade": 0, "run_cost_delta": 0})
 		"relic":
 			if not run_state.relic_ids.has(content_id):
@@ -146,6 +146,17 @@ func _first_empty_potion_slot(run_state: Dictionary) -> int:
 		if run_state.potions[index] == null:
 			return index
 	return -1
+
+
+func _next_card_instance_id(run_state: Dictionary) -> String:
+	var highest := -1
+	for card in run_state.get("deck", []):
+		var instance_id := String(card.get("instance_id", ""))
+		if not instance_id.begins_with("card-"):
+			continue
+		if instance_id.substr(5).is_valid_int():
+			highest = maxi(highest, int(instance_id.substr(5)))
+	return "card-%03d" % (highest + 1)
 
 
 func _error(code: String, message: String, details: Dictionary = {}) -> Dictionary:

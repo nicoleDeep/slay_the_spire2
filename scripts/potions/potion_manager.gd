@@ -40,8 +40,24 @@ func use_potion(run_state: Dictionary, slot: int, context: Dictionary = {}) -> D
 	var potion: Dictionary = database.get("potions", {}).get(String(potion_id), {})
 	if String(potion.get("use_context", "combat")) != String(context.get("use_context", "combat")):
 		return _error("ERR_POTION_CONTEXT", "Potion cannot be used in this context")
+	var target_check := _validate_target(potion, context)
+	if not target_check.ok:
+		return target_check
 	run_state.potions[slot] = null
 	return {"ok": true, "code": "OK", "effects": potion.get("effects", []).duplicate(true)}
+
+
+func _validate_target(potion: Dictionary, context: Dictionary) -> Dictionary:
+	match String(potion.get("target", "none")):
+		"selected_enemy":
+			var target_index := int(context.get("target_index", -1))
+			if not context.get("valid_enemy_targets", []).has(target_index):
+				return _error("ERR_POTION_TARGET", "Potion target is not legal", {"target_index": target_index})
+		"player", "none":
+			pass
+		_:
+			return _error("ERR_POTION_TARGET", "Unsupported potion target")
+	return {"ok": true, "code": "OK"}
 
 
 func _first_empty_slot(run_state: Dictionary) -> int:
