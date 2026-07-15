@@ -758,11 +758,22 @@ func _play_sfx(sfx_id: String) -> void:
 	var path := String(SFX.get(sfx_id, ""))
 	if path.is_empty():
 		return
-	var stream: AudioStream = load(path)
+	var stream := _load_audio_stream(path)
 	if stream == null:
 		return
 	audio_player.stream = stream
 	audio_player.play()
+
+
+func _load_audio_stream(path: String) -> AudioStream:
+	if path.get_extension().to_lower() == "wav":
+		var wav_stream := AudioStreamWAV.load_from_file(path)
+		if wav_stream != null:
+			return wav_stream
+	var imported_stream: AudioStream = load(path)
+	if imported_stream != null:
+		return imported_stream
+	return null
 
 
 func _emit_sfx(sfx_id: String) -> void:
