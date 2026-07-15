@@ -144,11 +144,18 @@ func _load_envelope(path: String) -> Dictionary:
 
 func _canonical_json(value: Variant) -> String:
 	if value is Dictionary:
+		var normalized: Dictionary = value
+		if normalized.has("seed_exact"):
+			normalized = normalized.duplicate(true)
+			normalized.seed = String(normalized.seed_exact)
+		if normalized.has("state_exact"):
+			normalized = normalized.duplicate(true)
+			normalized.state = String(normalized.state_exact)
 		var keys: Array = value.keys()
 		keys.sort()
 		var parts: Array[String] = []
 		for key in keys:
-			parts.append("%s:%s" % [JSON.stringify(String(key)), _canonical_json(value[key])])
+			parts.append("%s:%s" % [JSON.stringify(String(key)), _canonical_json(normalized[key])])
 		return "{" + ",".join(parts) + "}"
 	if value is Array:
 		var parts: Array[String] = []

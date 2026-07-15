@@ -130,6 +130,7 @@ func enter_node(node_id: String) -> Dictionary:
 	run_state.current_node_id = node_id
 	run_state.phase = "node_active"
 	_set_node(location, location.node)
+	_lock_unselected_available_nodes_on_floor(int(location.floor_index), node_id)
 	var save_result := _save()
 	if not save_result.ok:
 		return save_result
@@ -566,6 +567,15 @@ func _find_node(node_id: String) -> Dictionary:
 
 func _set_node(location: Dictionary, node: Dictionary) -> void:
 	run_state.map.floors[int(location.floor_index)].nodes[int(location.node_index)] = node
+
+
+func _lock_unselected_available_nodes_on_floor(floor_index: int, selected_node_id: String) -> void:
+	var nodes: Array = run_state.map.floors[floor_index].nodes
+	for node_index in range(nodes.size()):
+		var node: Dictionary = nodes[node_index]
+		if String(node.get("id", "")) != selected_node_id and String(node.get("status", "")) == "available":
+			node.status = "locked"
+			run_state.map.floors[floor_index].nodes[node_index] = node
 
 
 func _error(code: String, message: String, details: Dictionary = {}) -> Dictionary:
